@@ -22,6 +22,7 @@ model UserGroup {
 model User {
   id          String     @id @default(uuid())
   name        String
+  email       String?
   password    String
   role        String
   createdAt   DateTime   @default(now())
@@ -36,8 +37,8 @@ model UserForm {
   userId   String
   formId   String
   hasVoted Boolean @default(false)
-  user     User    @relation(fields: [userId], references: [id])
-  form     Form    @relation(fields: [formId], references: [id])
+  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  form     Form    @relation(fields: [formId], references: [id], onDelete: Cascade)
 
   @@id([userId, formId])
 }
@@ -57,6 +58,6 @@ model Decision {
   votes     Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  form      Form     @relation(fields: [formId], references: [id])
+  form      Form     @relation(fields: [formId], references: [id], onDelete: Cascade)
   formId    String
 }
