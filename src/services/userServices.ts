@@ -1,7 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
 
-const client = new PrismaClient();
+export const client = new PrismaClient();
 
 async function findAllUsers() {
   const result = await client.user.findMany();
@@ -65,18 +65,6 @@ async function createNewUser(
         return updatedUser;
       }
     }
-
-    // Enforces many-to-many relationship between all users and all forms in the join table
-    const forms = await client.form.findMany();
-    if (forms.length > 0) {
-      await client.userForm.createMany({
-        data: forms.map((form) => ({
-          userId: newUser.id,
-          formId: form.id,
-        })),
-      });
-    }
-
     return newUser;
   });
   return transaction;
@@ -91,25 +79,9 @@ async function createNewUserGroup(groupName: string) {
   return result;
 }
 
-async function deleteUserGroup(groupName: string) {
-  const groupWithUsers = await client.userGroup.findUnique({
-    where: {
-      name: groupName,
-    },
-    select: {
-      users: true,
-    },
-  });
 
-  if (groupWithUsers && groupWithUsers.users.length === 0) {
-    const result = await client.userGroup.delete({
-      where: {
-        name: groupName,
-      },
-    });
-    return result;
-  }
-  return null;
+async function changeUserUsergroup() {
+  return 'WIP'
 }
 
 async function changeUserGroup(username: string, groupname: string) {
@@ -152,6 +124,31 @@ async function changeProxyOfUser(username: string, newAmount: number) {
     throw new Error(`Error: Cannot update proxyvotes of user ${username}`);
   }
   return result;
+}
+
+async function deleteUser() {
+  return 'WIP'
+}
+
+async function deleteUserGroup(groupName: string) {
+  const groupWithUsers = await client.userGroup.findUnique({
+    where: {
+      name: groupName,
+    },
+    select: {
+      users: true,
+    },
+  });
+
+  if (groupWithUsers && groupWithUsers.users.length === 0) {
+    const result = await client.userGroup.delete({
+      where: {
+        name: groupName,
+      },
+    });
+    return result;
+  }
+  return null;
 }
 
 async function validateUser(username: string, plainPassword: string) {
