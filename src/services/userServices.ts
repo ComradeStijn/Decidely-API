@@ -3,12 +3,12 @@ import bcrypt from "bcrypt";
 
 export const client = new PrismaClient();
 
-async function findAllUsers() {
+export async function findAllUsers() {
   const result = await client.user.findMany();
   return result;
 }
 
-async function findAllUsersByGroup(groupName: string) {
+export async function findAllUsersByGroup(groupName: string) {
   const users = await client.userGroup.findUnique({
     where: {
       name: groupName,
@@ -20,7 +20,7 @@ async function findAllUsersByGroup(groupName: string) {
   return users;
 }
 
-async function findUserByName(username: string) {
+export async function findUserByName(username: string) {
   const result = await client.user.findUnique({
     where: {
       name: username,
@@ -29,7 +29,7 @@ async function findUserByName(username: string) {
   return result;
 }
 
-async function createNewUser(
+export async function createNewUser(
   username: string,
   password: string,
   amount: number,
@@ -70,7 +70,7 @@ async function createNewUser(
   return transaction;
 }
 
-async function createNewUserGroup(groupName: string) {
+export async function createNewUserGroup(groupName: string) {
   const result = await client.userGroup.create({
     data: {
       name: groupName,
@@ -79,12 +79,7 @@ async function createNewUserGroup(groupName: string) {
   return result;
 }
 
-
-async function changeUserUsergroup() {
-  return 'WIP'
-}
-
-async function changeUserGroup(username: string, groupname: string) {
+export async function changeUserGroup(username: string, groupname: string) {
   const newGroup = await client.userGroup.findUnique({
     where: { name: groupname },
   });
@@ -110,7 +105,7 @@ async function changeUserGroup(username: string, groupname: string) {
   return null;
 }
 
-async function changeProxyOfUser(username: string, newAmount: number) {
+export async function changeProxyOfUser(username: string, newAmount: number) {
   const result = await client.user.update({
     where: {
       name: username,
@@ -126,11 +121,16 @@ async function changeProxyOfUser(username: string, newAmount: number) {
   return result;
 }
 
-async function deleteUser() {
-  return 'WIP'
+export async function deleteUser(username: string) {
+  const result = await client.user.delete({
+    where: {
+      name: username,
+    },
+  });
+  return result;
 }
 
-async function deleteUserGroup(groupName: string) {
+export async function deleteUserGroup(groupName: string) {
   const groupWithUsers = await client.userGroup.findUnique({
     where: {
       name: groupName,
@@ -151,7 +151,7 @@ async function deleteUserGroup(groupName: string) {
   return null;
 }
 
-async function validateUser(username: string, plainPassword: string) {
+export async function validateUser(username: string, plainPassword: string) {
   const user = await client.user.findUnique({
     where: {
       name: username,
