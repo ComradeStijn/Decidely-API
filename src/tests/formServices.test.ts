@@ -2,6 +2,7 @@ import {
   createForm,
   findFormByTitle,
   deleteForm,
+  findAllForms,
 } from "../services/formServices";
 import { client } from "../services/userServices";
 
@@ -41,6 +42,16 @@ describe("Form Finding", async () => {
     } else {
       expect(result).toBeNull();
     }
+  });
+
+  it("Find all forms", async () => {
+    const form1 = await createForm("Title", ["Decision1", "Decision2"]);
+    const form2 = await createForm("Title2", ["Decision3", "Decision4"]);
+
+    const result = await findAllForms();
+
+    expect(result.length).toBe(2);
+    expect(result).toMatchObject([form1, form2]);
   });
 });
 
