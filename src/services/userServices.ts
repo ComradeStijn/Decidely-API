@@ -94,7 +94,6 @@ export async function changeUserGroup(username: string, groupname: string) {
       },
       data: {
         userGroup: {
-          disconnect: true,
           connect: { id: newGroup.id },
         },
       },
