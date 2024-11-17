@@ -1,7 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
 
-const client = new PrismaClient();
+export const client = new PrismaClient();
 
 async function findAllUsers() {
   const result = await client.user.findMany();

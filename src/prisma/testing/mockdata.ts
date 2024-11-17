@@ -43,6 +43,10 @@ async function main() {
     }
   })
 
+  if (!form1) {
+    throw new Error("Error finding first form")
+  }
+
   await client.decision.createMany({
     data: [
       {
