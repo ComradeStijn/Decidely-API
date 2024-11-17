@@ -3,6 +3,8 @@ import {
   changeUserGroup,
   createNewUser,
   createNewUserGroup,
+  deleteUserGroup,
+  findAllUserGroups,
   findAllUsers,
   findAllUsersByGroup,
   findUserByName,
@@ -108,5 +110,28 @@ describe("Usergroup", async () => {
     const user = await findUserByName("Stijn");
 
     expect(user?.userGroupId).toBe(group2.id);
+  });
+
+  it("Usergroup deleting", async () => {
+    const groupBefore = await createNewUserGroup("Group");
+
+    const result = await deleteUserGroup("Group");
+    const groupAfter = await findAllUserGroups();
+
+    expect(result).toMatchObject(groupBefore);
+    expect(groupAfter).toMatchObject([]);
+  });
+
+  it("Usergroup does not delete when user exists", async () => {
+    await createNewUserGroup("Group");
+    await createNewUser("Stijn", "password", 3);
+    await changeUserGroup('Stijn','Group')
+
+    const result = await deleteUserGroup('Group')
+    const user = await findUserByName('Stijn')
+    const group = await client.userGroup.findUnique({where: {name: 'Group'}})
+
+    expect(result).toBeNull()
+    expect(user?.userGroupId).toBe(group?.id)
   });
 });

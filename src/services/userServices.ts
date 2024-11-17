@@ -8,6 +8,11 @@ export async function findAllUsers() {
   return result;
 }
 
+export async function findAllUserGroups() {
+  const result = await client.userGroup.findMany();
+  return result;
+}
+
 export async function findAllUsersByGroup(groupName: string) {
   const users = await client.userGroup.findUnique({
     where: {
