@@ -34,7 +34,18 @@ export async function createForm(title: string, decisions: string[]) {
         formId: form.id,
       })),
     });
-    const result =  await tx.form.findUnique({where: {title: title}, include: {decisions: true}})
+    const result = await tx.form.findUnique({
+      where: { title: title },
+      include: { decisions: true },
+    });
     return result;
   });
+}
+
+export async function deleteForm(title: string) {
+  const result = await client.form.delete({
+    where: { title: title },
+    include: { decisions: true },
+  });
+  return result;
 }
