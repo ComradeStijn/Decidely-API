@@ -1,13 +1,16 @@
 import { PrismaClient } from "@prisma/client";
 import {
+  changeProxyOfUser,
   changeUserGroup,
   createNewUser,
   createNewUserGroup,
+  deleteUser,
   deleteUserGroup,
   findAllUserGroups,
   findAllUsers,
   findAllUsersByGroup,
   findUserByName,
+  validateUser,
 } from "../services/userServices";
 
 const client = new PrismaClient();
@@ -22,7 +25,7 @@ beforeEach(async () => {
 });
 
 describe("User creation", async () => {
-  it("createNewUser returns user", async () => {
+  it("Create User returns user", async () => {
     const result = await createNewUser(
       "Stijn",
       "password",
@@ -40,6 +43,21 @@ describe("User creation", async () => {
     };
 
     expect(result).toMatchObject(expectation);
+  });
+
+  it("Create Users with existing group", async () => {
+    await createNewUserGroup("Group");
+    await createNewUser("Stijn", "password", 2, "Group");
+
+    const user = await findUserByName("Stijn");
+    const groupUsers = await findAllUsersByGroup("Group");
+    const group = await client.userGroup.findUnique({
+      where: { name: "Group" },
+    });
+
+    expect(user?.userGroupId).toBe(group?.id);
+    expect(groupUsers?.users.length).toBe(1);
+    expect(groupUsers?.users[0].id).toBe(user?.id);
   });
 });
 
@@ -125,13 +143,62 @@ describe("Usergroup", async () => {
   it("Usergroup does not delete when user exists", async () => {
     await createNewUserGroup("Group");
     await createNewUser("Stijn", "password", 3);
-    await changeUserGroup('Stijn','Group')
+    await changeUserGroup("Stijn", "Group");
 
-    const result = await deleteUserGroup('Group')
-    const user = await findUserByName('Stijn')
-    const group = await client.userGroup.findUnique({where: {name: 'Group'}})
+    const result = await deleteUserGroup("Group");
+    const user = await findUserByName("Stijn");
+    const group = await client.userGroup.findUnique({
+      where: { name: "Group" },
+    });
 
-    expect(result).toBeNull()
-    expect(user?.userGroupId).toBe(group?.id)
+    expect(result).toBeNull();
+    expect(user?.userGroupId).toBe(group?.id);
   });
 });
+
+describe("Editing User", async () => {
+  it("Change proxy of user", async () => {
+    await createNewUser("Stijn", "password", 1);
+
+    const user = await changeProxyOfUser("Stijn", 2);
+
+    expect(user.proxyAmount).toBe(2);
+  });
+});
+
+describe("Delete user", async () => {
+  it("Delete user", async () => {
+    const user = await createNewUser('Stijn', 'test', 2)
+
+    const deletedUser = await deleteUser('Stijn')
+    const foundUser = await findUserByName('Stijn')
+
+    expect(user.id).toBe(deletedUser.id)
+    expect(foundUser).toBeNull()
+  })
+
+  it("Delete user with group", async() => {
+    await createNewUser('Stijn', 'test', 2)
+    await createNewUserGroup('Group')
+    await changeUserGroup('Stijn', 'Group')
+
+    await deleteUser('Stijn')
+    const groupUsers = await findAllUsersByGroup('Group')
+    const foundUser = await findUserByName('Stijn')
+
+    expect(groupUsers?.users.length).toBe(0)
+    expect(foundUser).toBeNull()
+  })
+})
+
+describe('User validation', async () => {
+  it("Validation", async () => {
+    const user = await createNewUser('Stijn', 'test', 2)
+
+    const correctValidation = await validateUser('Stijn', 'test')
+    const falseValidation = await validateUser('Stijn', 'False')
+
+    expect(correctValidation).toStrictEqual(user)
+    expect(falseValidation).toBe(false)
+  })
+})
