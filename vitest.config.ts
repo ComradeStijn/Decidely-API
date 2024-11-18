@@ -7,10 +7,5 @@ export default defineConfig({
         globals: true,
         environment: 'node',
         // setupFiles: './tests/setup.ts',
-        poolOptions: {
-            threads: {
-                singleThread: true
-            }
-        }
     },
 });

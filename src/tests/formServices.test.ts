@@ -6,38 +6,34 @@ import {
   findAllForms,
 } from "../services/formServices";
 
+let client: PrismaClient;
 beforeEach(async () => {
-  const client = new PrismaClient();
+  client = new PrismaClient();
 
   await client.$transaction(async (tx) => {
-    await tx.decision.deleteMany();
-    await tx.user.deleteMany();
     await tx.userForm.deleteMany();
     await tx.userGroup.deleteMany();
     await tx.userGroupForm.deleteMany();
+    await tx.decision.deleteMany();
     await tx.form.deleteMany();
+    await tx.user.deleteMany();
   });
 });
 
 afterEach(async () => {
-  const client = new PrismaClient();
-
   await client.$transaction(async (tx) => {
-    await tx.decision.deleteMany();
-    await tx.user.deleteMany();
     await tx.userForm.deleteMany();
     await tx.userGroup.deleteMany();
     await tx.userGroupForm.deleteMany();
+    await tx.decision.deleteMany();
     await tx.form.deleteMany();
+    await tx.user.deleteMany();
   });
+  await client.$disconnect();
 });
-
-
 
 describe("Form Creation", async () => {
   it("Create Form with empty decision array", async () => {
-    const client = new PrismaClient();
-
     client.$transaction(async (tx) => {
       const form = await createForm(tx, "Title", []);
 
@@ -46,8 +42,6 @@ describe("Form Creation", async () => {
   });
 
   it("Create Form with decisions", async () => {
-    const client = new PrismaClient();
-
     client.$transaction(async (tx) => {
       const form = await createForm(tx, "Title", ["Dec 1", "Dec 2"]);
 
@@ -60,8 +54,6 @@ describe("Form Creation", async () => {
 
 describe("Form Finding", async () => {
   it("Finds created form", async () => {
-    const client = new PrismaClient();
-
     await client.$transaction(async (tx) => {
       const form = await createForm(tx, "Title", []);
 
@@ -70,14 +62,12 @@ describe("Form Finding", async () => {
       if (form) {
         expect(result).toMatchObject(form);
       } else {
-        expect(result).toBeNull();
+        throw new Error("findFormByTitle");
       }
     });
   });
 
   it("Find all forms", async () => {
-    const client = new PrismaClient();
-
     await client.$transaction(async (tx) => {
       const form1 = await createForm(tx, "Title", ["Decision1", "Decision2"]);
       const form2 = await createForm(tx, "Title2", ["Decision3", "Decision4"]);
@@ -92,8 +82,6 @@ describe("Form Finding", async () => {
 
 describe("Form Deletion", async () => {
   it("Delete form with decisions", async () => {
-    const client = new PrismaClient();
-
     await client.$transaction(async (tx) => {
       const form = await createForm(tx, "Title", ["Decision 1", "Decision 2"]);
 
@@ -104,7 +92,7 @@ describe("Form Deletion", async () => {
         expect(result).toMatchObject(form);
         expect(decisions.length).toBe(0);
       } else {
-        expect(result).toBeNull();
+        throw new Error("deleteForm");
       }
     });
   });

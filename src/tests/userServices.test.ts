@@ -13,46 +13,45 @@ import {
   validateUser,
 } from "../services/userServices";
 
+let client: PrismaClient;
 beforeEach(async () => {
-  const client = new PrismaClient();
+  client = new PrismaClient();
+
   await client.$transaction(async (tx) => {
-    await tx.decision.deleteMany();
-    await tx.user.deleteMany();
     await tx.userForm.deleteMany();
     await tx.userGroup.deleteMany();
     await tx.userGroupForm.deleteMany();
+    await tx.decision.deleteMany();
     await tx.form.deleteMany();
+    await tx.user.deleteMany();
   });
 });
 
 afterEach(async () => {
-  const client = new PrismaClient();
-
   await client.$transaction(async (tx) => {
-    await tx.decision.deleteMany();
-    await tx.user.deleteMany();
     await tx.userForm.deleteMany();
     await tx.userGroup.deleteMany();
     await tx.userGroupForm.deleteMany();
+    await tx.decision.deleteMany();
     await tx.form.deleteMany();
+    await tx.user.deleteMany();
   });
+  await client.$disconnect();
 });
 
 describe("User creation", async () => {
   it("Create User returns user", async () => {
-    const client = new PrismaClient();
-
     await client.$transaction(async (tx) => {
       const result = await createNewUser(
-        client,
-        "Stijn",
+        tx,
+        "Stijn3",
         2,
         undefined,
         "test@test.com",
         "user"
       );
       const expectation = {
-        name: "Stijn",
+        name: "Stijn3",
         email: "test@test.com",
         role: "user",
         proxyAmount: 2,
@@ -64,13 +63,11 @@ describe("User creation", async () => {
   });
 
   it("Create Users with existing group", async () => {
-    const client = new PrismaClient();
-
     await client.$transaction(async (tx) => {
       await createNewUserGroup(tx, "Group");
-      await createNewUser(tx, "Stijn", 2, "Group");
+      await createNewUser(tx, "Stijn2", 2, "Group");
 
-      const user = await findUserByName(tx, "Stijn");
+      const user = await findUserByName(tx, "Stijn2");
       const groupUsers = await findAllUsersByGroup(tx, "Group");
       const group = await tx.userGroup.findUnique({
         where: { name: "Group" },
@@ -85,20 +82,18 @@ describe("User creation", async () => {
 
 describe("User finding", async () => {
   it("Find All Users finds two users", async () => {
-    const client = new PrismaClient();
-
     await client.$transaction(async (tx) => {
       const user1 = await createNewUser(tx, "Stijn", 2);
       const user2 = await createNewUser(tx, "Kean", 3);
       const result = await findAllUsers(tx);
 
-      expect(result).toStrictEqual([user1, user2]);
+      expect(
+        result.sort((a, b) => -a.name.localeCompare(b.name))
+      ).toStrictEqual([user1, user2]);
     });
   });
 
   it("Find user by name", async () => {
-    const client = new PrismaClient();
-
     await client.$transaction(async (tx) => {
       const user1 = await createNewUser(tx, "Stijn", 2);
       await createNewUser(tx, "Kean", 3);
@@ -111,8 +106,6 @@ describe("User finding", async () => {
 
 describe("Usergroup", async () => {
   it("Usergroup creation", async () => {
-    const client = new PrismaClient();
-
     await client.$transaction(async (tx) => {
       const result = await createNewUserGroup(tx, "Test");
       const expectation = {
@@ -124,8 +117,6 @@ describe("Usergroup", async () => {
   });
 
   it("Usergroup assigning", async () => {
-    const client = new PrismaClient();
-
     await client.$transaction(async (tx) => {
       await createNewUser(tx, "Stijn", 2);
       await createNewUserGroup(tx, "Group");
@@ -141,8 +132,6 @@ describe("Usergroup", async () => {
   });
 
   it("Usergroup finding", async () => {
-    const client = new PrismaClient();
-
     await client.$transaction(async (tx) => {
       await createNewUser(tx, "Stijn", 1);
       await createNewUser(tx, "Kean", 2);
@@ -161,8 +150,6 @@ describe("Usergroup", async () => {
   });
 
   it("Usergroup reassigning", async () => {
-    const client = new PrismaClient();
-
     await client.$transaction(async (tx) => {
       await createNewUser(tx, "Stijn", 2);
       await createNewUserGroup(tx, "Group 1");
@@ -177,8 +164,6 @@ describe("Usergroup", async () => {
   });
 
   it("Usergroup deleting", async () => {
-    const client = new PrismaClient();
-
     await client.$transaction(async (tx) => {
       const groupBefore = await createNewUserGroup(tx, "Group");
 
@@ -191,8 +176,6 @@ describe("Usergroup", async () => {
   });
 
   it("Usergroup does not delete when user exists", async () => {
-    const client = new PrismaClient();
-
     await client.$transaction(async (tx) => {
       await createNewUserGroup(tx, "Group");
       await createNewUser(tx, "Stijn", 3);
@@ -212,8 +195,6 @@ describe("Usergroup", async () => {
 
 describe("Editing User", async () => {
   it("Change proxy of user", async () => {
-    const client = new PrismaClient();
-
     await client.$transaction(async (tx) => {
       await createNewUser(tx, "Stijn", 1);
 
@@ -226,8 +207,6 @@ describe("Editing User", async () => {
 
 describe("Delete user", async () => {
   it("Delete user", async () => {
-    const client = new PrismaClient();
-
     await client.$transaction(async (tx) => {
       const user = await createNewUser(tx, "Stijn", 2);
 
@@ -240,8 +219,6 @@ describe("Delete user", async () => {
   });
 
   it("Delete user with group", async () => {
-    const client = new PrismaClient();
-
     await client.$transaction(async (tx) => {
       await createNewUser(tx, "Stijn", 2);
       await createNewUserGroup(tx, "Group");
@@ -259,8 +236,6 @@ describe("Delete user", async () => {
 
 describe("User validation", async () => {
   it("Validation", async () => {
-    const client = new PrismaClient();
-
     await client.$transaction(async (tx) => {
       const user = await createNewUser(tx, "Stijn", 2);
 
