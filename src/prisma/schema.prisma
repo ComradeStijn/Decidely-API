@@ -29,7 +29,7 @@ model User {
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
   proxyAmount Int
-  userGroup   UserGroup? @relation(fields: [userGroupId], references: [id])
+  userGroup   UserGroup? @relation(fields: [userGroupId], references: [id], onDelete: Cascade)
   userGroupId String?
   userForm    UserForm[]
 }
