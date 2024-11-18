@@ -2,22 +2,18 @@ import { Prisma } from "@prisma/client";
 
 export async function voteUserOnForm(
   client: Prisma.TransactionClient,
-  username: string,
-  formname: string,
+  userid: string,
+  formid: string,
   votes: {
     decision: string;
     amount: number;
   }[]
 ) {
-  const user = await client.user.findUnique({ where: { name: username } });
-  const form = await client.form.findUnique({ where: { title: formname } });
-  if (!user || !form) return null;
-
   await client.userForm.update({
     where: {
       userId_formId: {
-        userId: user.id,
-        formId: form.id,
+        userId: userid,
+        formId: formid,
       },
     },
     data: {
@@ -30,7 +26,7 @@ export async function voteUserOnForm(
       return client.decision.update({
         where: {
           formId_title: {
-            formId: form.id,
+            formId: formid,
             title: vote.decision,
           },
         },
@@ -46,18 +42,14 @@ export async function voteUserOnForm(
 
 export async function hasUserVoted(
   client: Prisma.TransactionClient,
-  username: string,
-  formname: string
+  userid: string,
+  formid: string
 ) {
-  const user = await client.user.findUnique({ where: { name: username } });
-  const form = await client.form.findUnique({ where: { title: formname } });
-  if (!user || !form) return null;
-
   const userForm = await client.userForm.findUnique({
     where: {
       userId_formId: {
-        userId: user.id,
-        formId: form.id,
+        userId: userid,
+        formId: formid,
       },
     },
   });

@@ -8,7 +8,6 @@ import {
 import { createForm } from "../services/formServices";
 import { checkRelationUser } from "../services/relationCheckServices";
 import { assignFormToGroup } from "../services/formAssignService";
-import exp from "constants";
 
 let client: PrismaClient;
 beforeEach(async () => {
@@ -27,10 +26,10 @@ beforeEach(async () => {
 describe("Refresh users in userForm", async () => {
   beforeEach(async () => {
     await client.$transaction(async (tx) => {
-      await createNewUserGroup(tx, "refreshGroup");
-      await createNewUser(tx, "refreshUser", 1, "refreshGroup");
-      await createForm(tx, "refreshForm", ["Decision 1"]);
-      await assignFormToGroup(tx, "refreshForm", "refreshGroup");
+      const group = await createNewUserGroup(tx, "refreshGroup");
+      const user = await createNewUser(tx, "refreshUser", 1, "refreshGroup");
+      const form = await createForm(tx, "refreshForm", ["Decision 1"]);
+      await assignFormToGroup(tx, form.id, group.id);
     });
   });
 
@@ -40,9 +39,12 @@ describe("Refresh users in userForm", async () => {
       const form = await tx.form.findUnique({
         where: { title: "refreshForm" },
       });
-      if (!form) throw new Error("No form");
+      const group = await tx.userGroup.findUnique({
+        where: { name: "refreshGroup" },
+      });
+      if (!form || !group) throw new Error("No form or group");
 
-      await checkRelationUser(tx, "TestUser", "refreshGroup");
+      await checkRelationUser(tx, user.id, group.id);
       const userForm = await tx.userForm.findUnique({
         where: {
           userId_formId: {

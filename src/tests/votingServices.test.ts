@@ -1,7 +1,10 @@
 import { PrismaClient } from "@prisma/client";
 import { createNewUser, createNewUserGroup } from "../services/userServices";
 import { createForm } from "../services/formServices";
-import { assignFormToGroup, assignFormToUser } from "../services/formAssignService";
+import {
+  assignFormToGroup,
+  assignFormToUser,
+} from "../services/formAssignService";
 import { hasUserVoted, voteUserOnForm } from "../services/votingServices";
 import exp from "constants";
 
@@ -22,16 +25,24 @@ beforeEach(async () => {
 describe("Voting", async () => {
   beforeEach(async () => {
     await client.$transaction(async (tx) => {
-      await createNewUserGroup(tx, "VotingGroup");
-      await createNewUser(tx, "Voter1", 1, "VotingGroup");
-      await createForm(tx, "Voting Form", ["Decision 1", "Decision 2"]);
-      await assignFormToGroup(tx, "Voting Form", "VotingGroup");
+      const group = await createNewUserGroup(tx, "VotingGroup");
+      const user = await createNewUser(tx, "Voter1", 1, "VotingGroup");
+      const form = await createForm(tx, "Voting Form", [
+        "Decision 1",
+        "Decision 2",
+      ]);
+      await assignFormToGroup(tx, form.id, group.id);
     });
   });
 
   it("User vote", async () => {
     await client.$transaction(async (tx) => {
-      const result = await voteUserOnForm(tx, "Voter1", "Voting Form", [
+      const user = await tx.user.findUnique({ where: { name: "Voter1" } });
+      const form = await tx.form.findUnique({
+        where: { title: "Voting Form" },
+      });
+      if (!user || !form) throw new Error("No user or form");
+      const result = await voteUserOnForm(tx, user.id, form.id, [
         { decision: "Decision 1", amount: 1 },
         { decision: "Decision 2", amount: 2 },
       ]);
@@ -55,14 +66,16 @@ describe("Voting", async () => {
 
   it("UserForm gets updated on vote", async () => {
     await client.$transaction(async (tx) => {
-      await voteUserOnForm(tx, "Voter1", "Voting Form", [
-        { decision: "Decision 1", amount: 1 },
-        { decision: "Decision 2", amount: 2 },
-      ]);
       const user = await tx.user.findUnique({ where: { name: "Voter1" } });
       const form = await tx.form.findUnique({
         where: { title: "Voting Form" },
       });
+      if (!user || !form) throw new Error("No user or form");
+      await voteUserOnForm(tx, user.id, form.id, [
+        { decision: "Decision 1", amount: 1 },
+        { decision: "Decision 2", amount: 2 },
+      ]);
+
       if (!user || !form) throw new Error("Not user or form");
 
       const userForm = await tx.userForm.findUnique({
@@ -79,20 +92,26 @@ describe("Voting", async () => {
     });
   });
 
-  it("hasUserVoted", async() => {
+  it("hasUserVoted", async () => {
     await client.$transaction(async (tx) => {
-      await voteUserOnForm(tx, "Voter1", "Voting Form", [
+      const user1 = await tx.user.findUnique({ where: { name: "Voter1" } });
+      const form = await tx.form.findUnique({
+        where: { title: "Voting Form" },
+      });
+      if (!user1 || !form) throw new Error("No user or form");
+      await voteUserOnForm(tx, user1.id, form.id, [
         { decision: "Decision 1", amount: 1 },
         { decision: "Decision 2", amount: 2 },
       ]);
-      await createNewUser(tx, 'Indium', 1)
-      await assignFormToUser(tx, 'Voting Form', 'Indium')
+      const user2 = await createNewUser(tx, "Indium", 1);
+      await assignFormToUser(tx, form.id, user2.id);
+      if (!user1 || !user2 || !form) throw new Error("No user or form");
 
-      const expectTrue = await hasUserVoted(tx, 'Voter1', 'Voting Form')
-      const expectFalse = await hasUserVoted(tx, 'Indium', 'Voting Form')
+      const expectTrue = await hasUserVoted(tx, user1.id, form.id);
+      const expectFalse = await hasUserVoted(tx, user2.id, form.id);
 
-      expect(expectTrue).toBe(true)
-      expect(expectFalse).toBe(false)
-    })
+      expect(expectTrue).toBe(true);
+      expect(expectFalse).toBe(false);
+    });
   });
 });

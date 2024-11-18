@@ -49,10 +49,10 @@ export async function createForm(
 
 export async function deleteForm(
   client: Prisma.TransactionClient,
-  title: string
+  id: string
 ) {
   const result = await client.form.delete({
-    where: { title: title },
+    where: { id: id },
     include: { decisions: true },
   });
   return result;

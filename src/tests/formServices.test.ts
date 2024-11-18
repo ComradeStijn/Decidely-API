@@ -85,7 +85,7 @@ describe("Form Deletion", async () => {
     await client.$transaction(async (tx) => {
       const form = await createForm(tx, "Title", ["Decision 1", "Decision 2"]);
 
-      const result = await deleteForm(tx, "Title");
+      const result = await deleteForm(tx, form.id);
       const decisions = await tx.decision.findMany();
 
       if (form) {

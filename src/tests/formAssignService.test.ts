@@ -37,21 +37,10 @@ beforeEach(async () => {
 describe("Assiging user to form", async () => {
   it("User gets assigned to form", async () => {
     await client.$transaction(async (tx) => {
-      await createNewUser(tx, "Stijn123", 1);
-      await createForm(tx, "Form123", ["decision"]);
+      const user = await createNewUser(tx, "Stijn123", 1);
+      const form = await createForm(tx, "Form123", ["decision"]);
 
-      await assignFormToUser(tx, "Form123", "Stijn123");
-      const form = await tx.form.findUnique({
-        where: { title: "Form123" },
-        include: { userForms: true },
-      });
-      const user = await tx.user.findUnique({
-        where: { name: "Stijn123" },
-        include: { userForm: true },
-      });
-      if (!form || !user) {
-        throw new Error("form or user");
-      }
+      await assignFormToUser(tx, form.id, user.id);
       const userForm = await tx.userForm.findUnique({
         where: {
           userId_formId: {
@@ -65,8 +54,8 @@ describe("Assiging user to form", async () => {
       }
 
       expect(userForm).not.toBeNull();
-      expect(userForm).toMatchObject(user.userForm[0]);
-      expect(userForm).toMatchObject(form.userForms[0]);
+      expect(userForm.userId).toBe(user.id)
+      expect(userForm.formId).toBe(form.id)
       expect(userForm.hasVoted).toBe(false);
     });
   });
@@ -74,31 +63,24 @@ describe("Assiging user to form", async () => {
   it("Removing form from user", async () => {
     await client.$transaction(async (tx) => {
       const date = Date.now();
-      await createNewUser(tx, `Stijn${date}`, 1);
-      await createForm(tx, `Title${date}`, ["Decision 1"]);
-      await assignFormToUser(tx, `Title${date}`, `Stijn${date}`);
+      const user = await createNewUser(tx, `Stijn${date}`, 1);
+      const form = await createForm(tx, `Title${date}`, ["Decision 1"]);
+      await assignFormToUser(tx, form.id, user.id);
 
-      const action = await removeFormFromUser(
-        tx,
-        `Title${date}`,
-        `Stijn${date}`
-      );
-      if (!action) {
-        throw new Error("removeFormFromUser");
-      }
+      await removeFormFromUser(tx, form.id, user.id)
       const userForms = await tx.userForm.findMany();
-      const user = await tx.user.findUnique({
+      const userAfter = await tx.user.findUnique({
         where: { name: `Stijn${date}` },
         include: { userForm: true },
       });
-      const form = await tx.form.findUnique({
+      const formAfter = await tx.form.findUnique({
         where: { title: `Title${date}` },
         include: { userForms: true },
       });
 
       expect(userForms.length).toBe(0);
-      expect(user?.userForm.length).toBe(0);
-      expect(form?.userForms.length).toBe(0);
+      expect(userAfter?.userForm.length).toBe(0);
+      expect(formAfter?.userForms.length).toBe(0);
     });
   });
 });
@@ -111,11 +93,7 @@ describe("Assign userGroup to Form", async () => {
       const user = await createNewUser(tx, `Stijn${date}`, 1, `Group${date}`);
       const form = await createForm(tx, `Title${date}`, ["Decision"]);
 
-      const result = await assignFormToGroup(
-        tx,
-        `Title${date}`,
-        `Group${date}`
-      );
+      const result = await assignFormToGroup(tx, form.id, group.id);
       if (!result) throw new Error("assignFormToGroup");
       const userGroupForm = tx.userGroupForm.findUnique({
         where: {
@@ -142,12 +120,12 @@ describe("Assign userGroup to Form", async () => {
   it("Assigning group with multiple users to form", async () => {
     client.$transaction(async (tx) => {
       const date = Date.now();
-      await createNewUserGroup(tx, `Group${date}`);
+      const group = await createNewUserGroup(tx, `Group${date}`);
       const user1 = await createNewUser(tx, `Stijn${date}`, 2, `Group${date}`);
       const user2 = await createNewUser(tx, `Kean${date}`, 1, `Group${date}`);
       const form = await createForm(tx, `Title${date}`, ["decision 1"]);
 
-      await assignFormToGroup(tx, `Title${date}`, `Group${date}`);
+      await assignFormToGroup(tx, form.id, group.id);
       const userForms = await tx.userForm.findMany();
 
       expect(userForms.length).toBe(2);
@@ -167,9 +145,9 @@ describe("Assign userGroup to Form", async () => {
       const user1 = await createNewUser(tx, `Stijn${date}`, 2, `Group${date}`);
       const user2 = await createNewUser(tx, `Kean${date}`, 1, `Group${date}`);
       const form = await createForm(tx, `Title${date}`, ["decision 1"]);
-      await assignFormToGroup(tx, `Title${date}`, `Group${date}`);
+      await assignFormToGroup(tx, form.id, group.id);
 
-      await removeFormFromGroup(tx, form.title, group.name)
+      await removeFormFromGroup(tx, form.id, group.id)
       const userForm = await tx.userForm.findMany()
       const userGroupForm = await tx.userGroupForm.findMany()
 
