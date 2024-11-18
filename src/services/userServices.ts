@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import bcrypt from "bcrypt";
+import crypto from 'crypto'
 
 export const client = new PrismaClient();
 
@@ -36,18 +36,17 @@ export async function findUserByName(username: string) {
 
 export async function createNewUser(
   username: string,
-  password: string,
   amount: number,
   userGroup?: string,
+  email?: string,
   role: string = "user",
-  email?: string
 ) {
   const transaction = await client.$transaction(async () => {
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const token = crypto.randomBytes(64).toString('hex')
     const newUser = await client.user.create({
       data: {
         name: username,
-        password: hashedPassword,
+        token: token,
         proxyAmount: amount,
         role: role,
         email: email || undefined,
@@ -155,7 +154,7 @@ export async function deleteUserGroup(groupName: string) {
   return null;
 }
 
-export async function validateUser(username: string, plainPassword: string) {
+export async function validateUser(username: string, token: string) {
   const user = await client.user.findUnique({
     where: {
       name: username,
@@ -164,6 +163,6 @@ export async function validateUser(username: string, plainPassword: string) {
 
   if (!user) return false;
 
-  const isMatch = await bcrypt.compare(plainPassword, user.password);
+  const isMatch = user.token === token
   return isMatch ? user : false;
 }

@@ -26,14 +26,7 @@ beforeEach(async () => {
 
 describe("User creation", async () => {
   it("Create User returns user", async () => {
-    const result = await createNewUser(
-      "Stijn",
-      "password",
-      2,
-      undefined,
-      "user",
-      "test@test.com"
-    );
+    const result = await createNewUser("Stijn", 2, undefined, 'test@test.com', 'user');
     const expectation = {
       name: "Stijn",
       email: "test@test.com",
@@ -47,7 +40,7 @@ describe("User creation", async () => {
 
   it("Create Users with existing group", async () => {
     await createNewUserGroup("Group");
-    await createNewUser("Stijn", "password", 2, "Group");
+    await createNewUser("Stijn", 2, "Group");
 
     const user = await findUserByName("Stijn");
     const groupUsers = await findAllUsersByGroup("Group");
@@ -63,16 +56,16 @@ describe("User creation", async () => {
 
 describe("User finding", async () => {
   it("Find All Users finds two users", async () => {
-    const user1 = await createNewUser("Stijn", "password", 2);
-    const user2 = await createNewUser("Kean", "test", 3);
+    const user1 = await createNewUser("Stijn", 2);
+    const user2 = await createNewUser("Kean",  3);
     const result = await findAllUsers();
 
     expect(result).toStrictEqual([user1, user2]);
   });
 
   it("Find user by name", async () => {
-    const user1 = await createNewUser("Stijn", "password", 2);
-    await createNewUser("Kean", "test", 3);
+    const user1 = await createNewUser("Stijn", 2);
+    await createNewUser("Kean", 3);
     const result = await findUserByName("Stijn");
 
     expect(result).toStrictEqual(user1);
@@ -90,7 +83,7 @@ describe("Usergroup", async () => {
   });
 
   it("Usergroup assigning", async () => {
-    await createNewUser("Stijn", "test", 2);
+    await createNewUser("Stijn", 2);
     await createNewUserGroup("Group");
 
     const result = await changeUserGroup("Stijn", "Group");
@@ -103,8 +96,8 @@ describe("Usergroup", async () => {
   });
 
   it("Usergroup finding", async () => {
-    await createNewUser("Stijn", "test", 1);
-    await createNewUser("Kean", "Test", 2);
+    await createNewUser("Stijn", 1);
+    await createNewUser("Kean", 2);
     await createNewUserGroup("Group");
     await changeUserGroup("Stijn", "Group");
     await changeUserGroup("Kean", "Group");
@@ -119,7 +112,7 @@ describe("Usergroup", async () => {
   });
 
   it("Usergroup reassigning", async () => {
-    await createNewUser("Stijn", "test", 2);
+    await createNewUser("Stijn", 2);
     await createNewUserGroup("Group 1");
     const group2 = await createNewUserGroup("Group 2");
 
@@ -142,7 +135,7 @@ describe("Usergroup", async () => {
 
   it("Usergroup does not delete when user exists", async () => {
     await createNewUserGroup("Group");
-    await createNewUser("Stijn", "password", 3);
+    await createNewUser("Stijn", 3);
     await changeUserGroup("Stijn", "Group");
 
     const result = await deleteUserGroup("Group");
@@ -158,7 +151,7 @@ describe("Usergroup", async () => {
 
 describe("Editing User", async () => {
   it("Change proxy of user", async () => {
-    await createNewUser("Stijn", "password", 1);
+    await createNewUser("Stijn", 1);
 
     const user = await changeProxyOfUser("Stijn", 2);
 
@@ -168,7 +161,7 @@ describe("Editing User", async () => {
 
 describe("Delete user", async () => {
   it("Delete user", async () => {
-    const user = await createNewUser('Stijn', 'test', 2)
+    const user = await createNewUser('Stijn',2)
 
     const deletedUser = await deleteUser('Stijn')
     const foundUser = await findUserByName('Stijn')
@@ -178,7 +171,7 @@ describe("Delete user", async () => {
   })
 
   it("Delete user with group", async() => {
-    await createNewUser('Stijn', 'test', 2)
+    await createNewUser('Stijn',  2)
     await createNewUserGroup('Group')
     await changeUserGroup('Stijn', 'Group')
 
@@ -193,9 +186,9 @@ describe("Delete user", async () => {
 
 describe('User validation', async () => {
   it("Validation", async () => {
-    const user = await createNewUser('Stijn', 'test', 2)
+    const user = await createNewUser('Stijn', 2)
 
-    const correctValidation = await validateUser('Stijn', 'test')
+    const correctValidation = await validateUser('Stijn', user.token)
     const falseValidation = await validateUser('Stijn', 'False')
 
     expect(correctValidation).toStrictEqual(user)
