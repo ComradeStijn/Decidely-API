@@ -71,4 +71,6 @@ model Decision {
   updatedAt DateTime @updatedAt
   form      Form     @relation(fields: [formId], references: [id], onDelete: Cascade)
   formId    String
+
+  @@unique([formId, title])
 }
