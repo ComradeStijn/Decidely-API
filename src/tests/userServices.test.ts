@@ -13,185 +13,262 @@ import {
   validateUser,
 } from "../services/userServices";
 
-const client = new PrismaClient();
-
 beforeEach(async () => {
-  await client.decision.deleteMany();
-  await client.user.deleteMany();
-  await client.userForm.deleteMany();
-  await client.userGroup.deleteMany();
-  await client.userGroupForm.deleteMany();
-  await client.form.deleteMany();
+  const client = new PrismaClient();
+  await client.$transaction(async (tx) => {
+    await tx.decision.deleteMany();
+    await tx.user.deleteMany();
+    await tx.userForm.deleteMany();
+    await tx.userGroup.deleteMany();
+    await tx.userGroupForm.deleteMany();
+    await tx.form.deleteMany();
+  });
+});
+
+afterEach(async () => {
+  const client = new PrismaClient();
+
+  await client.$transaction(async (tx) => {
+    await tx.decision.deleteMany();
+    await tx.user.deleteMany();
+    await tx.userForm.deleteMany();
+    await tx.userGroup.deleteMany();
+    await tx.userGroupForm.deleteMany();
+    await tx.form.deleteMany();
+  });
 });
 
 describe("User creation", async () => {
   it("Create User returns user", async () => {
-    const result = await createNewUser("Stijn", 2, undefined, 'test@test.com', 'user');
-    const expectation = {
-      name: "Stijn",
-      email: "test@test.com",
-      role: "user",
-      proxyAmount: 2,
-      userGroupId: null,
-    };
+    const client = new PrismaClient();
 
-    expect(result).toMatchObject(expectation);
+    await client.$transaction(async (tx) => {
+      const result = await createNewUser(
+        client,
+        "Stijn",
+        2,
+        undefined,
+        "test@test.com",
+        "user"
+      );
+      const expectation = {
+        name: "Stijn",
+        email: "test@test.com",
+        role: "user",
+        proxyAmount: 2,
+        userGroupId: null,
+      };
+
+      expect(result).toMatchObject(expectation);
+    });
   });
 
   it("Create Users with existing group", async () => {
-    await createNewUserGroup("Group");
-    await createNewUser("Stijn", 2, "Group");
+    const client = new PrismaClient();
 
-    const user = await findUserByName("Stijn");
-    const groupUsers = await findAllUsersByGroup("Group");
-    const group = await client.userGroup.findUnique({
-      where: { name: "Group" },
+    await client.$transaction(async (tx) => {
+      await createNewUserGroup(tx, "Group");
+      await createNewUser(tx, "Stijn", 2, "Group");
+
+      const user = await findUserByName(tx, "Stijn");
+      const groupUsers = await findAllUsersByGroup(tx, "Group");
+      const group = await tx.userGroup.findUnique({
+        where: { name: "Group" },
+      });
+
+      expect(user?.userGroupId).toBe(group?.id);
+      expect(groupUsers?.users.length).toBe(1);
+      expect(groupUsers?.users[0].id).toBe(user?.id);
     });
-
-    expect(user?.userGroupId).toBe(group?.id);
-    expect(groupUsers?.users.length).toBe(1);
-    expect(groupUsers?.users[0].id).toBe(user?.id);
   });
 });
 
 describe("User finding", async () => {
   it("Find All Users finds two users", async () => {
-    const user1 = await createNewUser("Stijn", 2);
-    const user2 = await createNewUser("Kean",  3);
-    const result = await findAllUsers();
+    const client = new PrismaClient();
 
-    expect(result).toStrictEqual([user1, user2]);
+    await client.$transaction(async (tx) => {
+      const user1 = await createNewUser(tx, "Stijn", 2);
+      const user2 = await createNewUser(tx, "Kean", 3);
+      const result = await findAllUsers(tx);
+
+      expect(result).toStrictEqual([user1, user2]);
+    });
   });
 
   it("Find user by name", async () => {
-    const user1 = await createNewUser("Stijn", 2);
-    await createNewUser("Kean", 3);
-    const result = await findUserByName("Stijn");
+    const client = new PrismaClient();
 
-    expect(result).toStrictEqual(user1);
+    await client.$transaction(async (tx) => {
+      const user1 = await createNewUser(tx, "Stijn", 2);
+      await createNewUser(tx, "Kean", 3);
+      const result = await findUserByName(tx, "Stijn");
+
+      expect(result).toStrictEqual(user1);
+    });
   });
 });
 
 describe("Usergroup", async () => {
   it("Usergroup creation", async () => {
-    const result = await createNewUserGroup("Test");
-    const expectation = {
-      name: "Test",
-    };
+    const client = new PrismaClient();
 
-    expect(result).toMatchObject(expectation);
+    await client.$transaction(async (tx) => {
+      const result = await createNewUserGroup(tx, "Test");
+      const expectation = {
+        name: "Test",
+      };
+
+      expect(result).toMatchObject(expectation);
+    });
   });
 
   it("Usergroup assigning", async () => {
-    await createNewUser("Stijn", 2);
-    await createNewUserGroup("Group");
+    const client = new PrismaClient();
 
-    const result = await changeUserGroup("Stijn", "Group");
-    const expectation = await findUserByName("Stijn");
-    if (!expectation) {
-      throw new Error("No user found");
-    }
+    await client.$transaction(async (tx) => {
+      await createNewUser(tx, "Stijn", 2);
+      await createNewUserGroup(tx, "Group");
 
-    expect(result).toMatchObject(expectation);
+      const result = await changeUserGroup(tx, "Stijn", "Group");
+      const expectation = await findUserByName(tx, "Stijn");
+      if (!expectation) {
+        throw new Error("No user found");
+      }
+
+      expect(result).toMatchObject(expectation);
+    });
   });
 
   it("Usergroup finding", async () => {
-    await createNewUser("Stijn", 1);
-    await createNewUser("Kean", 2);
-    await createNewUserGroup("Group");
-    await changeUserGroup("Stijn", "Group");
-    await changeUserGroup("Kean", "Group");
+    const client = new PrismaClient();
 
-    const result = await findAllUsersByGroup("Group");
-    const resultId = result?.users.map((user) => user.userGroupId);
-    const user1 = await findUserByName("Stijn");
-    const user2 = await findUserByName("Kean");
+    await client.$transaction(async (tx) => {
+      await createNewUser(tx, "Stijn", 1);
+      await createNewUser(tx, "Kean", 2);
+      await createNewUserGroup(tx, "Group");
+      await changeUserGroup(tx, "Stijn", "Group");
+      await changeUserGroup(tx, "Kean", "Group");
 
-    expect(resultId?.length).toBe(2);
-    expect(resultId).toStrictEqual([user1?.userGroupId, user2?.userGroupId]);
+      const result = await findAllUsersByGroup(tx, "Group");
+      const resultId = result?.users.map((user) => user.userGroupId);
+      const user1 = await findUserByName(tx, "Stijn");
+      const user2 = await findUserByName(tx, "Kean");
+
+      expect(resultId?.length).toBe(2);
+      expect(resultId).toStrictEqual([user1?.userGroupId, user2?.userGroupId]);
+    });
   });
 
   it("Usergroup reassigning", async () => {
-    await createNewUser("Stijn", 2);
-    await createNewUserGroup("Group 1");
-    const group2 = await createNewUserGroup("Group 2");
+    const client = new PrismaClient();
 
-    await changeUserGroup("Stijn", "Group 1");
-    await changeUserGroup("Stijn", "Group 2");
-    const user = await findUserByName("Stijn");
+    await client.$transaction(async (tx) => {
+      await createNewUser(tx, "Stijn", 2);
+      await createNewUserGroup(tx, "Group 1");
+      const group2 = await createNewUserGroup(tx, "Group 2");
 
-    expect(user?.userGroupId).toBe(group2.id);
+      await changeUserGroup(tx, "Stijn", "Group 1");
+      await changeUserGroup(tx, "Stijn", "Group 2");
+      const user = await findUserByName(tx, "Stijn");
+
+      expect(user?.userGroupId).toBe(group2.id);
+    });
   });
 
   it("Usergroup deleting", async () => {
-    const groupBefore = await createNewUserGroup("Group");
+    const client = new PrismaClient();
 
-    const result = await deleteUserGroup("Group");
-    const groupAfter = await findAllUserGroups();
+    await client.$transaction(async (tx) => {
+      const groupBefore = await createNewUserGroup(tx, "Group");
 
-    expect(result).toMatchObject(groupBefore);
-    expect(groupAfter).toMatchObject([]);
+      const result = await deleteUserGroup(tx, "Group");
+      const groupAfter = await findAllUserGroups(tx);
+
+      expect(result).toMatchObject(groupBefore);
+      expect(groupAfter).toMatchObject([]);
+    });
   });
 
   it("Usergroup does not delete when user exists", async () => {
-    await createNewUserGroup("Group");
-    await createNewUser("Stijn", 3);
-    await changeUserGroup("Stijn", "Group");
+    const client = new PrismaClient();
 
-    const result = await deleteUserGroup("Group");
-    const user = await findUserByName("Stijn");
-    const group = await client.userGroup.findUnique({
-      where: { name: "Group" },
+    await client.$transaction(async (tx) => {
+      await createNewUserGroup(tx, "Group");
+      await createNewUser(tx, "Stijn", 3);
+      await changeUserGroup(tx, "Stijn", "Group");
+
+      const result = await deleteUserGroup(tx, "Group");
+      const user = await findUserByName(tx, "Stijn");
+      const group = await tx.userGroup.findUnique({
+        where: { name: "Group" },
+      });
+
+      expect(result).toBeNull();
+      expect(user?.userGroupId).toBe(group?.id);
     });
-
-    expect(result).toBeNull();
-    expect(user?.userGroupId).toBe(group?.id);
   });
 });
 
 describe("Editing User", async () => {
   it("Change proxy of user", async () => {
-    await createNewUser("Stijn", 1);
+    const client = new PrismaClient();
 
-    const user = await changeProxyOfUser("Stijn", 2);
+    await client.$transaction(async (tx) => {
+      await createNewUser(tx, "Stijn", 1);
 
-    expect(user.proxyAmount).toBe(2);
+      const user = await changeProxyOfUser(tx, "Stijn", 2);
+
+      expect(user.proxyAmount).toBe(2);
+    });
   });
 });
 
 describe("Delete user", async () => {
   it("Delete user", async () => {
-    const user = await createNewUser('Stijn',2)
+    const client = new PrismaClient();
 
-    const deletedUser = await deleteUser('Stijn')
-    const foundUser = await findUserByName('Stijn')
+    await client.$transaction(async (tx) => {
+      const user = await createNewUser(tx, "Stijn", 2);
 
-    expect(user.id).toBe(deletedUser.id)
-    expect(foundUser).toBeNull()
-  })
+      const deletedUser = await deleteUser(tx, "Stijn");
+      const foundUser = await findUserByName(tx, "Stijn");
 
-  it("Delete user with group", async() => {
-    await createNewUser('Stijn',  2)
-    await createNewUserGroup('Group')
-    await changeUserGroup('Stijn', 'Group')
+      expect(user.id).toBe(deletedUser.id);
+      expect(foundUser).toBeNull();
+    });
+  });
 
-    await deleteUser('Stijn')
-    const groupUsers = await findAllUsersByGroup('Group')
-    const foundUser = await findUserByName('Stijn')
+  it("Delete user with group", async () => {
+    const client = new PrismaClient();
 
-    expect(groupUsers?.users.length).toBe(0)
-    expect(foundUser).toBeNull()
-  })
-})
+    await client.$transaction(async (tx) => {
+      await createNewUser(tx, "Stijn", 2);
+      await createNewUserGroup(tx, "Group");
+      await changeUserGroup(tx, "Stijn", "Group");
 
-describe('User validation', async () => {
+      await deleteUser(tx, "Stijn");
+      const groupUsers = await findAllUsersByGroup(tx, "Group");
+      const foundUser = await findUserByName(tx, "Stijn");
+
+      expect(groupUsers?.users.length).toBe(0);
+      expect(foundUser).toBeNull();
+    });
+  });
+});
+
+describe("User validation", async () => {
   it("Validation", async () => {
-    const user = await createNewUser('Stijn', 2)
+    const client = new PrismaClient();
 
-    const correctValidation = await validateUser('Stijn', user.token)
-    const falseValidation = await validateUser('Stijn', 'False')
+    await client.$transaction(async (tx) => {
+      const user = await createNewUser(tx, "Stijn", 2);
 
-    expect(correctValidation).toStrictEqual(user)
-    expect(falseValidation).toBe(false)
-  })
-})
+      const correctValidation = await validateUser(tx, "Stijn", user.token);
+      const falseValidation = await validateUser(tx, "Stijn", "False");
+
+      expect(correctValidation).toStrictEqual(user);
+      expect(falseValidation).toBe(false);
+    });
+  });
+});

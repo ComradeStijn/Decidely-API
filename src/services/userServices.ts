@@ -1,19 +1,21 @@
-import { PrismaClient } from "@prisma/client";
-import crypto from 'crypto'
+import { Prisma, PrismaClient } from "@prisma/client";
+import crypto from "crypto";
 
-export const client = new PrismaClient();
 
-export async function findAllUsers() {
+export async function findAllUsers(client: Prisma.TransactionClient) {
   const result = await client.user.findMany();
   return result;
 }
 
-export async function findAllUserGroups() {
+export async function findAllUserGroups(client: Prisma.TransactionClient) {
   const result = await client.userGroup.findMany();
   return result;
 }
 
-export async function findAllUsersByGroup(groupName: string) {
+export async function findAllUsersByGroup(
+  client: Prisma.TransactionClient,
+  groupName: string
+) {
   const users = await client.userGroup.findUnique({
     where: {
       name: groupName,
@@ -25,7 +27,10 @@ export async function findAllUsersByGroup(groupName: string) {
   return users;
 }
 
-export async function findUserByName(username: string) {
+export async function findUserByName(
+  client: Prisma.TransactionClient,
+  username: string
+) {
   const result = await client.user.findUnique({
     where: {
       name: username,
@@ -35,46 +40,47 @@ export async function findUserByName(username: string) {
 }
 
 export async function createNewUser(
+  client: Prisma.TransactionClient,
   username: string,
   amount: number,
   userGroup?: string,
   email?: string,
-  role: string = "user",
+  role: string = "user"
 ) {
-  const transaction = await client.$transaction(async () => {
-    const token = crypto.randomBytes(64).toString('hex')
-    const newUser = await client.user.create({
-      data: {
-        name: username,
-        token: token,
-        proxyAmount: amount,
-        role: role,
-        email: email || undefined,
-      },
-    });
-
-    if (userGroup) {
-      const group = await client.userGroup.findFirst({
-        where: { name: userGroup },
-      });
-      if (group) {
-        const updatedUser = await client.user.update({
-          where: {
-            id: newUser.id,
-          },
-          data: {
-            userGroupId: group.id,
-          },
-        });
-        return updatedUser;
-      }
-    }
-    return newUser;
+  const token = crypto.randomBytes(64).toString("hex");
+  const newUser = await client.user.create({
+    data: {
+      name: username,
+      token: token,
+      proxyAmount: amount,
+      role: role,
+      email: email || undefined,
+    },
   });
-  return transaction;
-}
 
-export async function createNewUserGroup(groupName: string) {
+  if (userGroup) {
+    const group = await client.userGroup.findFirst({
+      where: { name: userGroup },
+    });
+    if (group) {
+      const updatedUser = await client.user.update({
+        where: {
+          id: newUser.id,
+        },
+        data: {
+          userGroupId: group.id,
+        },
+      });
+      return updatedUser;
+    }
+  }
+
+  return newUser;
+}
+export async function createNewUserGroup(
+  client: Prisma.TransactionClient,
+  groupName: string
+) {
   const result = await client.userGroup.create({
     data: {
       name: groupName,
@@ -83,7 +89,11 @@ export async function createNewUserGroup(groupName: string) {
   return result;
 }
 
-export async function changeUserGroup(username: string, groupname: string) {
+export async function changeUserGroup(
+  client: Prisma.TransactionClient,
+  username: string,
+  groupname: string
+) {
   const newGroup = await client.userGroup.findUnique({
     where: { name: groupname },
   });
@@ -104,11 +114,14 @@ export async function changeUserGroup(username: string, groupname: string) {
     });
     return result;
   }
-
   return null;
 }
 
-export async function changeProxyOfUser(username: string, newAmount: number) {
+export async function changeProxyOfUser(
+  client: Prisma.TransactionClient,
+  username: string,
+  newAmount: number
+) {
   const result = await client.user.update({
     where: {
       name: username,
@@ -124,7 +137,10 @@ export async function changeProxyOfUser(username: string, newAmount: number) {
   return result;
 }
 
-export async function deleteUser(username: string) {
+export async function deleteUser(
+  client: Prisma.TransactionClient,
+  username: string
+) {
   const result = await client.user.delete({
     where: {
       name: username,
@@ -133,7 +149,10 @@ export async function deleteUser(username: string) {
   return result;
 }
 
-export async function deleteUserGroup(groupName: string) {
+export async function deleteUserGroup(
+  client: Prisma.TransactionClient,
+  groupName: string
+) {
   const groupWithUsers = await client.userGroup.findUnique({
     where: {
       name: groupName,
@@ -151,10 +170,15 @@ export async function deleteUserGroup(groupName: string) {
     });
     return result;
   }
+
   return null;
 }
 
-export async function validateUser(username: string, token: string) {
+export async function validateUser(
+  client: Prisma.TransactionClient,
+  username: string,
+  token: string
+) {
   const user = await client.user.findUnique({
     where: {
       name: username,
@@ -163,6 +187,6 @@ export async function validateUser(username: string, token: string) {
 
   if (!user) return false;
 
-  const isMatch = user.token === token
+  const isMatch = user.token === token;
   return isMatch ? user : false;
 }
