@@ -9,7 +9,10 @@ export async function findAllForms(client: Prisma.TransactionClient) {
   return result;
 }
 
-export async function findFormByTitle(client: Prisma.TransactionClient, title: string) {
+export async function findFormByTitle(
+  client: Prisma.TransactionClient,
+  title: string
+) {
   const result = await client.form.findUnique({
     where: {
       title: title,
@@ -21,28 +24,33 @@ export async function findFormByTitle(client: Prisma.TransactionClient, title: s
   return result;
 }
 
-export async function createForm(client: Prisma.TransactionClient, title: string, decisions: string[]) {
-  
-    const form = await client.form.create({
-      data: {
-        title: title,
-      },
-    });
-    await client.decision.createMany({
-      data: decisions.map((decision) => ({
-        title: decision,
-        formId: form.id,
-      })),
-    });
-    const result = await client.form.findUnique({
-      where: { title: title },
-      include: { decisions: true },
-    });
-    return result;
-
+export async function createForm(
+  client: Prisma.TransactionClient,
+  title: string,
+  decisions: string[]
+) {
+  const form = await client.form.create({
+    data: {
+      title: title,
+    },
+  });
+  await client.decision.createMany({
+    data: decisions.map((decision) => ({
+      title: decision,
+      formId: form.id,
+    })),
+  });
+  await client.form.findUnique({
+    where: { title: title },
+    include: { decisions: true },
+  });
+  return form;
 }
 
-export async function deleteForm(client: Prisma.TransactionClient, title: string) {
+export async function deleteForm(
+  client: Prisma.TransactionClient,
+  title: string
+) {
   const result = await client.form.delete({
     where: { title: title },
     include: { decisions: true },

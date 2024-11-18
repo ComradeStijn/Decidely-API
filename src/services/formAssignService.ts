@@ -20,9 +20,9 @@ export async function assignFormToGroup(
     },
   });
 
-  // group.users.forEach(async (user) => {
-  //   await assignFormToUser(client, formname, user.name);
-  // });
+  await Promise.all(
+    group.users.map((user) => assignFormToUser(client, formname, user.name))
+  );
 
   return result;
 }
@@ -52,6 +52,21 @@ export async function assignFormToUser(
     },
   });
   return result;
+}
+
+export async function removeFormFromGroup(
+  client: Prisma.TransactionClient,
+  formname: string,
+  groupname: string
+) {
+  const group = await client.userGroup.findUnique({ where: { name: groupname }, include: {users: true} });
+  const form = await client.form.findUnique({ where: { title: formname } });
+
+  if (!group || !form) return null;
+
+  await Promise.all(
+    group.users.map(user => removeFormFromUser(client, formname, user.name))
+  )
 }
 
 export async function removeFormFromUser(

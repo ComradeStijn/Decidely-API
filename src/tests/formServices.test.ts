@@ -20,17 +20,17 @@ beforeEach(async () => {
   });
 });
 
-afterEach(async () => {
-  await client.$transaction(async (tx) => {
-    await tx.userForm.deleteMany();
-    await tx.userGroup.deleteMany();
-    await tx.userGroupForm.deleteMany();
-    await tx.decision.deleteMany();
-    await tx.form.deleteMany();
-    await tx.user.deleteMany();
-  });
-  await client.$disconnect();
-});
+// afterEach(async () => {
+//   await client.$transaction(async (tx) => {
+//     await tx.userForm.deleteMany();
+//     await tx.userGroup.deleteMany();
+//     await tx.userGroupForm.deleteMany();
+//     await tx.decision.deleteMany();
+//     await tx.form.deleteMany();
+//     await tx.user.deleteMany();
+//   });
+//   await client.$disconnect();
+// });
 
 describe("Form Creation", async () => {
   it("Create Form with empty decision array", async () => {
@@ -69,8 +69,8 @@ describe("Form Finding", async () => {
 
   it("Find all forms", async () => {
     await client.$transaction(async (tx) => {
-      const form1 = await createForm(tx, "Title", ["Decision1", "Decision2"]);
-      const form2 = await createForm(tx, "Title2", ["Decision3", "Decision4"]);
+      const form1 = await createForm(tx, "Title5", ["Decision1", "Decision2"]);
+      const form2 = await createForm(tx, "Title4", ["Decision3", "Decision4"]);
 
       const result = await findAllForms(tx);
 

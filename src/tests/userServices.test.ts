@@ -27,17 +27,17 @@ beforeEach(async () => {
   });
 });
 
-afterEach(async () => {
-  await client.$transaction(async (tx) => {
-    await tx.userForm.deleteMany();
-    await tx.userGroup.deleteMany();
-    await tx.userGroupForm.deleteMany();
-    await tx.decision.deleteMany();
-    await tx.form.deleteMany();
-    await tx.user.deleteMany();
-  });
-  await client.$disconnect();
-});
+// afterEach(async () => {
+//   await client.$transaction(async (tx) => {
+//     await tx.userForm.deleteMany();
+//     await tx.userGroup.deleteMany();
+//     await tx.userGroupForm.deleteMany();
+//     await tx.decision.deleteMany();
+//     await tx.form.deleteMany();
+//     await tx.user.deleteMany();
+//   });
+//   await client.$disconnect();
+// });
 
 describe("User creation", async () => {
   it("Create User returns user", async () => {
