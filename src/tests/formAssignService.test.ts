@@ -54,8 +54,8 @@ describe("Assiging user to form", async () => {
       }
 
       expect(userForm).not.toBeNull();
-      expect(userForm.userId).toBe(user.id)
-      expect(userForm.formId).toBe(form.id)
+      expect(userForm.userId).toBe(user.id);
+      expect(userForm.formId).toBe(form.id);
       expect(userForm.hasVoted).toBe(false);
     });
   });
@@ -67,8 +67,12 @@ describe("Assiging user to form", async () => {
       const form = await createForm(tx, `Title${date}`, ["Decision 1"]);
       await assignFormToUser(tx, form.id, user.id);
 
-      await removeFormFromUser(tx, form.id, user.id)
-      const userForms = await tx.userForm.findMany();
+      await removeFormFromUser(tx, form.id, user.id);
+      const userForms = await tx.userForm.findMany({
+        where: {
+          userId: user.id,
+        },
+      });
       const userAfter = await tx.user.findUnique({
         where: { name: `Stijn${date}` },
         include: { userForm: true },
@@ -126,7 +130,11 @@ describe("Assign userGroup to Form", async () => {
       const form = await createForm(tx, `Title${date}`, ["decision 1"]);
 
       await assignFormToGroup(tx, form.id, group.id);
-      const userForms = await tx.userForm.findMany();
+      const userForms = await tx.userForm.findMany({
+        where: {
+          formId: form.id,
+        }
+      });
 
       expect(userForms.length).toBe(2);
       expect(userForms).toEqual(
@@ -147,12 +155,20 @@ describe("Assign userGroup to Form", async () => {
       const form = await createForm(tx, `Title${date}`, ["decision 1"]);
       await assignFormToGroup(tx, form.id, group.id);
 
-      await removeFormFromGroup(tx, form.id, group.id)
-      const userForm = await tx.userForm.findMany()
-      const userGroupForm = await tx.userGroupForm.findMany()
+      await removeFormFromGroup(tx, form.id, group.id);
+      const userForm = await tx.userForm.findMany({
+        where: {
+          formId: form.id
+        }
+      });
+      const userGroupForm = await tx.userGroupForm.findMany({
+        where: {
+          groupId: group.id
+        }
+      });
 
-      expect(userForm.length).toBe(0)
-      expect(userGroupForm.length).toBe(0)
+      expect(userForm.length).toBe(0);
+      expect(userGroupForm.length).toBe(0);
     });
   });
 });

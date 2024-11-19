@@ -24,35 +24,30 @@ beforeEach(async () => {
 });
 
 describe("Refresh users in userForm", async () => {
-  beforeEach(async () => {
-    await client.$transaction(async (tx) => {
-      const group = await createNewUserGroup(tx, "refreshGroup");
-      const user = await createNewUser(tx, "refreshUser", 1, group.id);
-      const form = await createForm(tx, "refreshForm", ["Decision 1"]);
-      await assignFormToGroup(tx, form.id, group.id);
-    });
-  });
-
   it("Refresh on adding user to group", async () => {
     await client.$transaction(async (tx) => {
-      const group = await tx.userGroup.findUnique({where: {name: "refreshGroup"}})
-      if (!group) throw new Error("No group")
-      const user = await createNewUser(tx, "TestUser", 1, group.id);
-      const form = await tx.form.findUnique({
-        where: { title: "refreshForm" },
-      });
-      if (!form || !group) throw new Error("No form or group");
+      const group = await createNewUserGroup(tx, "refreshGroup213");
+      const user1 = await createNewUser(tx, "refreshUser231", 1, group.id);
+      const form = await createForm(tx, "refreshForm231", ["Decision 1"]);
+      await assignFormToGroup(tx, form.id, group.id);
 
-      await checkRelationUser(tx, user.id, group.id);
+      const user2 = await createNewUser(tx, "TestUser1", 1, group.id);
+
+
+      await checkRelationUser(tx, user2.id, group.id);
       const userForm = await tx.userForm.findUnique({
         where: {
           userId_formId: {
-            userId: user.id,
+            userId: user2.id,
             formId: form.id,
           },
         },
       });
-      const userForms = await tx.userForm.findMany();
+      const userForms = await tx.userForm.findMany({
+        where: {
+          formId: form.id
+        }
+      });
 
       expect(userForm).not.toBeNull();
       expect(userForms.length).toBe(2);
@@ -61,11 +56,18 @@ describe("Refresh users in userForm", async () => {
 
   it("Deleting user when form assigned", async () => {
     await client.$transaction(async (tx) => {
-      const user = await tx.user.findUnique({where: {name: "refreshUser"}})
-      if (!user) throw new Error("No user")
+      const group = await createNewUserGroup(tx, "refreshGroup");
+      const user = await createNewUser(tx, "refreshUser", 1, group.id);
+      const form = await createForm(tx, "refreshForm333", ["Decision 1"]);
+      await assignFormToGroup(tx, form.id, group.id);
+
       await deleteUser(tx, user.id);
 
-      const result = await tx.userForm.findMany();
+      const result = await tx.userForm.findMany(({
+        where: {
+          formId: form.id,
+        }
+      }));
 
       expect(result.length).toBe(0);
     });
@@ -73,14 +75,24 @@ describe("Refresh users in userForm", async () => {
 
   it("Deleting usergroup when form assigned", async () => {
     await client.$transaction(async (tx) => {
-      const user = await tx.user.findUnique({where: {name: "refreshUser"}})
-      const group = await tx.userGroup.findUnique({where: {name: "refreshGroup"}})
-      if (!user || !group) throw new Error("No user or group")
+      const group = await createNewUserGroup(tx, "refreshGroup444");
+      const user = await createNewUser(tx, "refreshUser444", 1, group.id);
+      const form = await createForm(tx, "refreshForm444", ["Decision 1"]);
+      await assignFormToGroup(tx, form.id, group.id);
+
       await deleteUser(tx, user.id);
       await deleteUserGroup(tx, group.id);
 
-      const userGroupForm = await tx.userGroupForm.findMany();
-      const userGroup = await tx.userGroup.findMany();
+      const userGroupForm = await tx.userGroupForm.findMany({
+        where: {
+          formId: form.id
+        }
+      });
+      const userGroup = await tx.userGroup.findMany(({
+        where: {
+          id: group.id
+        }
+      }));
 
       expect(userGroupForm.length).toBe(0);
       expect(userGroup.length).toBe(0);

@@ -72,7 +72,8 @@ describe("Form Finding", async () => {
       const form1 = await createForm(tx, "Title5", ["Decision1", "Decision2"]);
       const form2 = await createForm(tx, "Title4", ["Decision3", "Decision4"]);
 
-      const result = await findAllForms(tx);
+      const preResult = await findAllForms(tx);
+      const result = preResult.filter(res => res.id === form1.id || res.id === form2.id)
 
       expect(result.length).toBe(2);
       expect(result).toMatchObject([form1, form2]);
@@ -86,7 +87,8 @@ describe("Form Deletion", async () => {
       const form = await createForm(tx, "Title", ["Decision 1", "Decision 2"]);
 
       const result = await deleteForm(tx, form.id);
-      const decisions = await tx.decision.findMany();
+      const preDecisions = await tx.decision.findMany();
+      const decisions = preDecisions.filter(res => res.formId === form.id) 
 
       if (form) {
         expect(result).toMatchObject(form);

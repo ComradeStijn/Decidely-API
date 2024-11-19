@@ -8,6 +8,11 @@ export default defineConfig({
         environment: 'node',
         sequence: {
             concurrent: false
+        },
+        poolOptions: {
+            threads: {
+                singleThread: true
+            }
         }
     },
 });

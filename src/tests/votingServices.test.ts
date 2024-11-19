@@ -22,7 +22,9 @@ beforeEach(async () => {
 });
 
 describe("Voting", async () => {
-  beforeEach(async () => {
+  
+
+  it("User vote", async () => {
     await client.$transaction(async (tx) => {
       const group = await createNewUserGroup(tx, "VotingGroup");
       const user = await createNewUser(tx, "Voter1", 1, group.id);
@@ -31,16 +33,7 @@ describe("Voting", async () => {
         "Decision 2",
       ]);
       await assignFormToGroup(tx, form.id, group.id);
-    });
-  });
 
-  it("User vote", async () => {
-    await client.$transaction(async (tx) => {
-      const user = await tx.user.findUnique({ where: { name: "Voter1" } });
-      const form = await tx.form.findUnique({
-        where: { title: "Voting Form" },
-      });
-      if (!user || !form) throw new Error("No user or form");
       const result = await voteUserOnForm(tx, user.id, form.id, [
         { decision: "Decision 1", amount: 1 },
         { decision: "Decision 2", amount: 2 },
@@ -65,17 +58,18 @@ describe("Voting", async () => {
 
   it("UserForm gets updated on vote", async () => {
     await client.$transaction(async (tx) => {
-      const user = await tx.user.findUnique({ where: { name: "Voter1" } });
-      const form = await tx.form.findUnique({
-        where: { title: "Voting Form" },
-      });
-      if (!user || !form) throw new Error("No user or form");
+      const group = await createNewUserGroup(tx, "VotingGroup");
+      const user = await createNewUser(tx, "Voter145", 1, group.id);
+      const form = await createForm(tx, "Voting Form11111", [
+        "Decision 1",
+        "Decision 2",
+      ]);
+      await assignFormToGroup(tx, form.id, group.id);
+      
       await voteUserOnForm(tx, user.id, form.id, [
         { decision: "Decision 1", amount: 1 },
         { decision: "Decision 2", amount: 2 },
       ]);
-
-      if (!user || !form) throw new Error("Not user or form");
 
       const userForm = await tx.userForm.findUnique({
         where: {
@@ -93,11 +87,14 @@ describe("Voting", async () => {
 
   it("hasUserVoted", async () => {
     await client.$transaction(async (tx) => {
-      const user1 = await tx.user.findUnique({ where: { name: "Voter1" } });
-      const form = await tx.form.findUnique({
-        where: { title: "Voting Form" },
-      });
-      if (!user1 || !form) throw new Error("No user or form");
+      const group = await createNewUserGroup(tx, "VotingGroup");
+      const user1 = await createNewUser(tx, "Voter123", 1, group.id);
+      const form = await createForm(tx, "Voting Form9897", [
+        "Decision 1",
+        "Decision 2",
+      ]);
+      await assignFormToGroup(tx, form.id, group.id);
+      
       await voteUserOnForm(tx, user1.id, form.id, [
         { decision: "Decision 1", amount: 1 },
         { decision: "Decision 2", amount: 2 },
