@@ -90,7 +90,7 @@ describe("Assign userGroup to Form", async () => {
     client.$transaction(async (tx) => {
       const date = Date.now();
       const group = await createNewUserGroup(tx, `Group${date}`);
-      const user = await createNewUser(tx, `Stijn${date}`, 1, `Group${date}`);
+      const user = await createNewUser(tx, `Stijn${date}`, 1, group.id);
       const form = await createForm(tx, `Title${date}`, ["Decision"]);
 
       const result = await assignFormToGroup(tx, form.id, group.id);
@@ -121,8 +121,8 @@ describe("Assign userGroup to Form", async () => {
     client.$transaction(async (tx) => {
       const date = Date.now();
       const group = await createNewUserGroup(tx, `Group${date}`);
-      const user1 = await createNewUser(tx, `Stijn${date}`, 2, `Group${date}`);
-      const user2 = await createNewUser(tx, `Kean${date}`, 1, `Group${date}`);
+      const user1 = await createNewUser(tx, `Stijn${date}`, 2, group.id);
+      const user2 = await createNewUser(tx, `Kean${date}`, 1, group.id);
       const form = await createForm(tx, `Title${date}`, ["decision 1"]);
 
       await assignFormToGroup(tx, form.id, group.id);

@@ -27,7 +27,7 @@ describe("Refresh users in userForm", async () => {
   beforeEach(async () => {
     await client.$transaction(async (tx) => {
       const group = await createNewUserGroup(tx, "refreshGroup");
-      const user = await createNewUser(tx, "refreshUser", 1, "refreshGroup");
+      const user = await createNewUser(tx, "refreshUser", 1, group.id);
       const form = await createForm(tx, "refreshForm", ["Decision 1"]);
       await assignFormToGroup(tx, form.id, group.id);
     });
@@ -35,12 +35,11 @@ describe("Refresh users in userForm", async () => {
 
   it("Refresh on adding user to group", async () => {
     await client.$transaction(async (tx) => {
-      const user = await createNewUser(tx, "TestUser", 1, "refreshGroup");
+      const group = await tx.userGroup.findUnique({where: {name: "refreshGroup"}})
+      if (!group) throw new Error("No group")
+      const user = await createNewUser(tx, "TestUser", 1, group.id);
       const form = await tx.form.findUnique({
         where: { title: "refreshForm" },
-      });
-      const group = await tx.userGroup.findUnique({
-        where: { name: "refreshGroup" },
       });
       if (!form || !group) throw new Error("No form or group");
 
@@ -62,7 +61,9 @@ describe("Refresh users in userForm", async () => {
 
   it("Deleting user when form assigned", async () => {
     await client.$transaction(async (tx) => {
-      await deleteUser(tx, "refreshUser");
+      const user = await tx.user.findUnique({where: {name: "refreshUser"}})
+      if (!user) throw new Error("No user")
+      await deleteUser(tx, user.id);
 
       const result = await tx.userForm.findMany();
 
@@ -72,8 +73,11 @@ describe("Refresh users in userForm", async () => {
 
   it("Deleting usergroup when form assigned", async () => {
     await client.$transaction(async (tx) => {
-      await deleteUser(tx, "refreshUser");
-      await deleteUserGroup(tx, "refreshGroup");
+      const user = await tx.user.findUnique({where: {name: "refreshUser"}})
+      const group = await tx.userGroup.findUnique({where: {name: "refreshGroup"}})
+      if (!user || !group) throw new Error("No user or group")
+      await deleteUser(tx, user.id);
+      await deleteUserGroup(tx, group.id);
 
       const userGroupForm = await tx.userGroupForm.findMany();
       const userGroup = await tx.userGroup.findMany();

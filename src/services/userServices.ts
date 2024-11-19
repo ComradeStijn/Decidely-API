@@ -1,7 +1,6 @@
 import { Prisma, PrismaClient } from "@prisma/client";
 import crypto from "crypto";
 
-
 export async function findAllUsers(client: Prisma.TransactionClient) {
   const result = await client.user.findMany();
   return result;
@@ -43,7 +42,7 @@ export async function createNewUser(
   client: Prisma.TransactionClient,
   username: string,
   amount: number,
-  userGroup?: string,
+  userGroupId?: string,
   email?: string,
   role: string = "user"
 ) {
@@ -58,25 +57,21 @@ export async function createNewUser(
     },
   });
 
-  if (userGroup) {
-    const group = await client.userGroup.findFirst({
-      where: { name: userGroup },
+  if (userGroupId) {
+    const updatedUser = await client.user.update({
+      where: {
+        id: newUser.id,
+      },
+      data: {
+        userGroupId: userGroupId,
+      },
     });
-    if (group) {
-      const updatedUser = await client.user.update({
-        where: {
-          id: newUser.id,
-        },
-        data: {
-          userGroupId: group.id,
-        },
-      });
-      return updatedUser;
-    }
+    return updatedUser;
   }
 
   return newUser;
 }
+
 export async function createNewUserGroup(
   client: Prisma.TransactionClient,
   groupName: string
@@ -91,59 +86,45 @@ export async function createNewUserGroup(
 
 export async function changeUserGroup(
   client: Prisma.TransactionClient,
-  username: string,
-  groupname: string
+  userid: string,
+  newGroupid: string
 ) {
-  const newGroup = await client.userGroup.findUnique({
-    where: { name: groupname },
-  });
-  const user = await client.user.findUnique({
-    where: { name: username },
-  });
-
-  if (user && newGroup) {
-    const result = await client.user.update({
-      where: {
-        name: user.name,
+  const result = await client.user.update({
+    where: {
+      id: userid,
+    },
+    data: {
+      userGroup: {
+        connect: { id: newGroupid },
       },
-      data: {
-        userGroup: {
-          connect: { id: newGroup.id },
-        },
-      },
-    });
-    return result;
-  }
-  return null;
+    },
+  });
+  return result;
 }
 
 export async function changeProxyOfUser(
   client: Prisma.TransactionClient,
-  username: string,
+  userid: string,
   newAmount: number
 ) {
   const result = await client.user.update({
     where: {
-      name: username,
+      id: userid,
     },
     data: {
       proxyAmount: newAmount,
     },
   });
-
-  if (!result) {
-    throw new Error(`Error: Cannot update proxyvotes of user ${username}`);
-  }
   return result;
 }
 
 export async function deleteUser(
   client: Prisma.TransactionClient,
-  username: string
+  userid: string
 ) {
   const result = await client.user.delete({
     where: {
-      name: username,
+      id: userid,
     },
   });
   return result;
@@ -151,11 +132,11 @@ export async function deleteUser(
 
 export async function deleteUserGroup(
   client: Prisma.TransactionClient,
-  groupName: string
+  groupid: string
 ) {
   const groupWithUsers = await client.userGroup.findUnique({
     where: {
-      name: groupName,
+      id: groupid,
     },
     select: {
       users: true,
@@ -165,7 +146,7 @@ export async function deleteUserGroup(
   if (groupWithUsers && groupWithUsers.users.length === 0) {
     const result = await client.userGroup.delete({
       where: {
-        name: groupName,
+        id: groupid,
       },
     });
     return result;
@@ -176,12 +157,12 @@ export async function deleteUserGroup(
 
 export async function validateUser(
   client: Prisma.TransactionClient,
-  username: string,
+  userid: string,
   token: string
 ) {
   const user = await client.user.findUnique({
     where: {
-      name: username,
+      id: userid,
     },
   });
 

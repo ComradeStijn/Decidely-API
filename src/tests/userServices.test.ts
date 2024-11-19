@@ -64,15 +64,11 @@ describe("User creation", async () => {
 
   it("Create Users with existing group", async () => {
     await client.$transaction(async (tx) => {
-      await createNewUserGroup(tx, "Group");
-      await createNewUser(tx, "Stijn2", 2, "Group");
+      const group = await createNewUserGroup(tx, "Group");
+      await createNewUser(tx, "Stijn2", 2, group.id);
 
       const user = await findUserByName(tx, "Stijn2");
       const groupUsers = await findAllUsersByGroup(tx, "Group");
-      const group = await tx.userGroup.findUnique({
-        where: { name: "Group" },
-      });
-
       expect(user?.userGroupId).toBe(group?.id);
       expect(groupUsers?.users.length).toBe(1);
       expect(groupUsers?.users[0].id).toBe(user?.id);
@@ -118,10 +114,10 @@ describe("Usergroup", async () => {
 
   it("Usergroup assigning", async () => {
     await client.$transaction(async (tx) => {
-      await createNewUser(tx, "Stijn", 2);
-      await createNewUserGroup(tx, "Group");
+      const user = await createNewUser(tx, "Stijn", 2);
+      const group = await createNewUserGroup(tx, "Group");
 
-      const result = await changeUserGroup(tx, "Stijn", "Group");
+      const result = await changeUserGroup(tx, user.id, group.id);
       const expectation = await findUserByName(tx, "Stijn");
       if (!expectation) {
         throw new Error("No user found");
@@ -133,33 +129,41 @@ describe("Usergroup", async () => {
 
   it("Usergroup finding", async () => {
     await client.$transaction(async (tx) => {
-      await createNewUser(tx, "Stijn", 1);
-      await createNewUser(tx, "Kean", 2);
-      await createNewUserGroup(tx, "Group");
-      await changeUserGroup(tx, "Stijn", "Group");
-      await changeUserGroup(tx, "Kean", "Group");
+      const user1 = await createNewUser(tx, "Stijn", 1);
+      const user2 = await createNewUser(tx, "Kean", 2);
+      const group = await createNewUserGroup(tx, "Group");
+      await changeUserGroup(tx, user1.id, group.id);
+      await changeUserGroup(tx, user2.id, group.id);
 
       const result = await findAllUsersByGroup(tx, "Group");
       const resultId = result?.users.map((user) => user.userGroupId);
-      const user1 = await findUserByName(tx, "Stijn");
-      const user2 = await findUserByName(tx, "Kean");
+      const user1update = await findUserByName(tx, "Stijn");
+      const user2update = await findUserByName(tx, "Kean");
+      if (!user1update || !user2update || !resultId)
+        throw new Error("No user1 or user2");
 
-      expect(resultId?.length).toBe(2);
-      expect(resultId).toStrictEqual([user1?.userGroupId, user2?.userGroupId]);
+      expect(resultId.length).toBe(2);
+      expect(resultId).toStrictEqual([
+        user1update.userGroupId,
+        user2update.userGroupId,
+      ]);
     });
   });
 
   it("Usergroup reassigning", async () => {
     await client.$transaction(async (tx) => {
-      await createNewUser(tx, "Stijn", 2);
-      await createNewUserGroup(tx, "Group 1");
+      const user = await createNewUser(tx, "Stijn", 2);
+      const group1 = await createNewUserGroup(tx, "Group 1");
       const group2 = await createNewUserGroup(tx, "Group 2");
 
-      await changeUserGroup(tx, "Stijn", "Group 1");
-      await changeUserGroup(tx, "Stijn", "Group 2");
-      const user = await findUserByName(tx, "Stijn");
+      await changeUserGroup(tx, user.id, group1.id);
+      await changeUserGroup(tx, user.id, group2.id);
+      const userUpdate = await findUserByName(tx, "Stijn");
+      const group1Update = await findAllUsersByGroup(tx, "Group 1");
+      if (!userUpdate || !group1Update) throw new Error("No userUpdate");
 
-      expect(user?.userGroupId).toBe(group2.id);
+      expect(group1Update.users.length).toBe(0);
+      expect(userUpdate.userGroupId).toBe(group2.id);
     });
   });
 
@@ -167,7 +171,7 @@ describe("Usergroup", async () => {
     await client.$transaction(async (tx) => {
       const groupBefore = await createNewUserGroup(tx, "Group");
 
-      const result = await deleteUserGroup(tx, "Group");
+      const result = await deleteUserGroup(tx, groupBefore.id);
       const groupAfter = await findAllUserGroups(tx);
 
       expect(result).toMatchObject(groupBefore);
@@ -177,18 +181,16 @@ describe("Usergroup", async () => {
 
   it("Usergroup does not delete when user exists", async () => {
     await client.$transaction(async (tx) => {
-      await createNewUserGroup(tx, "Group");
-      await createNewUser(tx, "Stijn", 3);
-      await changeUserGroup(tx, "Stijn", "Group");
+      const group = await createNewUserGroup(tx, "Group");
+      const user = await createNewUser(tx, "Stijn", 3);
+      await changeUserGroup(tx, user.id, group.id);
 
       const result = await deleteUserGroup(tx, "Group");
-      const user = await findUserByName(tx, "Stijn");
-      const group = await tx.userGroup.findUnique({
-        where: { name: "Group" },
-      });
+      const userAfter = await findUserByName(tx, "Stijn");
+      if (!userAfter) throw new Error("userAfter");
 
       expect(result).toBeNull();
-      expect(user?.userGroupId).toBe(group?.id);
+      expect(userAfter.userGroupId).toBe(group?.id);
     });
   });
 });
@@ -196,11 +198,14 @@ describe("Usergroup", async () => {
 describe("Editing User", async () => {
   it("Change proxy of user", async () => {
     await client.$transaction(async (tx) => {
-      await createNewUser(tx, "Stijn", 1);
+      const user = await createNewUser(tx, "Stijn", 1);
 
-      const user = await changeProxyOfUser(tx, "Stijn", 2);
+      const result = await changeProxyOfUser(tx, user.id, 2);
+      const check = await tx.user.findUnique({ where: { id: user.id } });
+      if (!check) throw new Error("No check");
 
-      expect(user.proxyAmount).toBe(2);
+      expect(result.proxyAmount).toBe(2);
+      expect(check.proxyAmount).toBe(2);
     });
   });
 });
@@ -210,7 +215,7 @@ describe("Delete user", async () => {
     await client.$transaction(async (tx) => {
       const user = await createNewUser(tx, "Stijn", 2);
 
-      const deletedUser = await deleteUser(tx, "Stijn");
+      const deletedUser = await deleteUser(tx, user.id);
       const foundUser = await findUserByName(tx, "Stijn");
 
       expect(user.id).toBe(deletedUser.id);
@@ -220,11 +225,11 @@ describe("Delete user", async () => {
 
   it("Delete user with group", async () => {
     await client.$transaction(async (tx) => {
-      await createNewUser(tx, "Stijn", 2);
-      await createNewUserGroup(tx, "Group");
-      await changeUserGroup(tx, "Stijn", "Group");
+      const user = await createNewUser(tx, "Stijn", 2);
+      const group = await createNewUserGroup(tx, "Group");
+      await changeUserGroup(tx, user.id, group.id);
 
-      await deleteUser(tx, "Stijn");
+      await deleteUser(tx, user.id);
       const groupUsers = await findAllUsersByGroup(tx, "Group");
       const foundUser = await findUserByName(tx, "Stijn");
 
@@ -239,8 +244,8 @@ describe("User validation", async () => {
     await client.$transaction(async (tx) => {
       const user = await createNewUser(tx, "Stijn", 2);
 
-      const correctValidation = await validateUser(tx, "Stijn", user.token);
-      const falseValidation = await validateUser(tx, "Stijn", "False");
+      const correctValidation = await validateUser(tx, user.id, user.token);
+      const falseValidation = await validateUser(tx, user.id, "False");
 
       expect(correctValidation).toStrictEqual(user);
       expect(falseValidation).toBe(false);

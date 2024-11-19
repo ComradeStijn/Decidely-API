@@ -6,7 +6,6 @@ import {
   assignFormToUser,
 } from "../services/formAssignService";
 import { hasUserVoted, voteUserOnForm } from "../services/votingServices";
-import exp from "constants";
 
 let client: PrismaClient;
 beforeEach(async () => {
@@ -26,7 +25,7 @@ describe("Voting", async () => {
   beforeEach(async () => {
     await client.$transaction(async (tx) => {
       const group = await createNewUserGroup(tx, "VotingGroup");
-      const user = await createNewUser(tx, "Voter1", 1, "VotingGroup");
+      const user = await createNewUser(tx, "Voter1", 1, group.id);
       const form = await createForm(tx, "Voting Form", [
         "Decision 1",
         "Decision 2",
