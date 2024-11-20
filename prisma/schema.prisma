@@ -14,9 +14,9 @@ datasource db {
 }
 
 model UserGroup {
-  id            String          @id @default(uuid())
-  name          String          @unique
-  users         User[]
+  id    String          @id @default(uuid())
+  name  String          @unique
+  users User[]
   forms UserGroupForm[]
 }
 
@@ -24,12 +24,12 @@ model User {
   id          String     @id @default(uuid())
   name        String     @unique
   email       String?    @unique
-  password    String
+  token       String
   role        String
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
   proxyAmount Int
-  userGroup   UserGroup? @relation(fields: [userGroupId], references: [id])
+  userGroup   UserGroup? @relation(fields: [userGroupId], references: [id], onDelete: Cascade)
   userGroupId String?
   userForm    UserForm[]
 }
@@ -54,12 +54,12 @@ model UserForm {
 }
 
 model Form {
-  id            String          @id @default(uuid())
-  title         String          @unique
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
-  decisions     Decision[]
-  userForms      UserForm[]
+  id         String          @id @default(uuid())
+  title      String          @unique
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+  decisions  Decision[]
+  userForms  UserForm[]
   userGroups UserGroupForm[]
 }
 
@@ -71,4 +71,6 @@ model Decision {
   updatedAt DateTime @updatedAt
   form      Form     @relation(fields: [formId], references: [id], onDelete: Cascade)
   formId    String
+
+  @@unique([formId, title])
 }
