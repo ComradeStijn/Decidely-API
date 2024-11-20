@@ -38,6 +38,18 @@ export async function findUserByName(
   return result;
 }
 
+export async function findUserById(
+  client: Prisma.TransactionClient,
+  userid: string
+) {
+  const result = await client.user.findUnique({
+    where: {
+      id: userid,
+    },
+  });
+  return result;
+}
+
 export async function createNewUser(
   client: Prisma.TransactionClient,
   username: string,

@@ -5,14 +5,15 @@ import {
   StrategyOptions,
   VerifiedCallback,
 } from "passport-jwt";
-import { validateUser } from "./services/userServices";
+import { findUserById, validateUser } from "./services/userServices";
 import { prismaClient } from "./app";
 import dotenv from "dotenv";
 dotenv.config();
 
 export type Payload = {
-  sub: string;
-  token: string;
+  sub: string,
+  role: string,
+  name: string,
 };
 
 const opts: StrategyOptions = {
@@ -25,9 +26,8 @@ export const configurePassport = async (passport: PassportStatic) => {
     new Strategy(opts, async (jwtPayload: Payload, done: VerifiedCallback) => {
       try {
         const userId = jwtPayload.sub;
-        const token = jwtPayload.token;
 
-        const user = await validateUser(prismaClient, userId, token);
+        const user = await findUserById(prismaClient, userId);
         if (user) {
           return done(null, user);
         } else {

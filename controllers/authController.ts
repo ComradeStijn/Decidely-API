@@ -7,29 +7,30 @@ import { prismaClient } from "../app";
 dotenv.config();
 
 export async function login(req: Request, res: Response) {
-  const { user, token } = req.body;
+  const { userId, token } = req.body;
 
-  if (!user || !token) {
-    return res.status(401).json({message: "No user or token provided"})
+  if (!userId || !token) {
+    return res.status(401).json({success: false, message: "No user or token provided"})
   
   }
 
   const validate = await prismaClient.$transaction(async (tx) => {
-    return await validateUser(tx, user, token);
+    return await validateUser(tx, userId, token);
   });
 
   if (!validate) {
-    return res.status(401).json({ message: "Incorrect Login Information" });
+    return res.status(401).json({ success: false, message: "Incorrect Login Information" });
   }
 
   const payload: Payload = {
-    sub: user,
-    token: token,
+    sub: validate.id,
+    name: validate.name,
+    role: validate.role,
   };
 
   const jsontoken = jwt.sign(payload, process.env.JWT_SECRET || "test", {
     expiresIn: "1h",
   });
 
-  return res.json({ token: jsontoken });
+  return res.json({ success: true, token: jsontoken });
 }
