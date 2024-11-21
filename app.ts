@@ -2,7 +2,8 @@ import { PrismaClient } from "@prisma/client";
 import express, { Express, Request, Response } from "express";
 import { configurePassport } from "./passport.config";
 import passport from "passport";
-import { login } from "./controllers/authController";
+import authRouter from "./routes/authRouter";
+import formRouter from "./routes/formRouter";
 
 const app: Express = express();
 export const prismaClient = new PrismaClient();
@@ -11,17 +12,16 @@ configurePassport(passport);
 
 app.use(express.json());
 
-app.get("/test", (req: Request, res: Response) => {
-  res.json({ message: "Test get request" });
-});
+app.use("/login", authRouter);
+app.use("/form", formRouter);
 
-app.post("/test", (req: Request, res: Response) => {
-  login(req, res);
-});
-
-app.use("/protected", passport.authenticate('jwt', {session: false}), (req: Request, res: Response) => {
-  res.json({ message: "Protected Success"})
-})
+app.use(
+  "/protected",
+  passport.authenticate("jwt", { session: false }),
+  (req: Request, res: Response) => {
+    res.json({ message: "Protected Success" });
+  }
+);
 
 const PORT = process.env.PORT || 3000;
 
