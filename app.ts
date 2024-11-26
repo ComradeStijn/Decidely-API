@@ -13,7 +13,7 @@ configurePassport(passport);
 app.use(express.json());
 
 app.use("/login", authRouter);
-app.use("/form", formRouter);
+app.use("/forms", passport.authenticate("jwt", {session: false}), formRouter);
 
 app.use(
   "/protected",

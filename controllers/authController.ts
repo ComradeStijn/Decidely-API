@@ -13,6 +13,7 @@ export async function login(
 ): Promise<void> {
   try {
     const { userId, token } = req.body;
+    console.log(userId, token)
 
     if (!userId || !token) {
       res

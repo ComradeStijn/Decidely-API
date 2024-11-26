@@ -7,6 +7,7 @@ import {
 } from "passport-jwt";
 import { findUserById, validateUser } from "./services/userServices";
 import { prismaClient } from "./app";
+import { User } from "@prisma/client";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -15,6 +16,18 @@ export type Payload = {
   role: string,
   name: string,
 };
+
+// export type User = {
+//   id: string,
+//   name: string,
+//   email: string | null,
+//   token: string,
+//   role: string,
+//   createdAt: Date,
+//   updatedAt: Date,
+//   proxyAmount: number,
+//   userGroupId: string | null
+// }
 
 const opts: StrategyOptions = {
   jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -27,7 +40,7 @@ export const configurePassport = async (passport: PassportStatic) => {
       try {
         const userId = jwtPayload.sub;
 
-        const user = await findUserById(prismaClient, userId);
+        const user: User | null = await findUserById(prismaClient, userId);
         if (user) {
           return done(null, user);
         } else {
