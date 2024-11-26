@@ -244,8 +244,8 @@ describe("User validation", async () => {
     await client.$transaction(async (tx) => {
       const user = await createNewUser(tx, "Stijn", 2);
 
-      const correctValidation = await validateUser(tx, user.id, user.token);
-      const falseValidation = await validateUser(tx, user.id, "False");
+      const correctValidation = await validateUser(tx, "Stijn", user.token);
+      const falseValidation = await validateUser(tx, "Stijn", "False");
 
       expect(correctValidation).toStrictEqual(user);
       expect(falseValidation).toBe(false);

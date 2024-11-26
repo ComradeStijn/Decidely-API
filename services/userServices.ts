@@ -169,12 +169,12 @@ export async function deleteUserGroup(
 
 export async function validateUser(
   client: Prisma.TransactionClient,
-  userid: string,
+  userName: string,
   token: string
 ) {
   const user = await client.user.findUnique({
     where: {
-      id: userid,
+      name: userName,
     },
   });
 
