@@ -11,7 +11,7 @@ import {
   findAllUsersByGroup,
   findUserByName,
   validateUser,
-} from "../services/userServices";
+} from "../../services/userServices";
 
 let client: PrismaClient;
 beforeEach(async () => {

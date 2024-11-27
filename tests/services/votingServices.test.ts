@@ -1,11 +1,11 @@
 import { PrismaClient } from "@prisma/client";
-import { createNewUser, createNewUserGroup } from "../services/userServices";
-import { createForm } from "../services/formServices";
+import { createNewUser, createNewUserGroup } from "../../services/userServices";
+import { createForm } from "../../services/formServices";
 import {
   assignFormToGroup,
   assignFormToUser,
-} from "../services/formAssignService";
-import { hasUserVoted, voteUserOnForm } from "../services/votingServices";
+} from "../../services/formAssignService";
+import { hasUserVoted, voteUserOnForm } from "../../services/votingServices";
 
 let client: PrismaClient;
 beforeEach(async () => {

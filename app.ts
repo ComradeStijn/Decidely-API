@@ -5,7 +5,7 @@ import passport from "passport";
 import authRouter from "./routes/authRouter";
 import formRouter from "./routes/formRouter";
 
-const app: Express = express();
+export const app: Express = express();
 export const prismaClient = new PrismaClient();
 
 configurePassport(passport);
@@ -13,7 +13,7 @@ configurePassport(passport);
 app.use(express.json());
 
 app.use("/login", authRouter);
-app.use("/forms", passport.authenticate("jwt", {session: false}), formRouter);
+app.use("/forms", passport.authenticate("jwt", { session: false }), formRouter);
 
 app.use(
   "/protected",
