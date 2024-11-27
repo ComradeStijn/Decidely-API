@@ -2,6 +2,7 @@ import request from "supertest";
 import { app } from "../../app";
 import { validateUser as originalValidateUser } from "../../services/userServices";
 
+
 vi.mock('../../services/userServices', () => ({
   validateUser: vi.fn()
 }))
@@ -12,7 +13,7 @@ beforeEach(() => {
   vi.resetAllMocks();
 });
 
-describe("userLogin", async () => {
+describe("userLogin", () => {
   it("GET not allowed", async () => {
     const response = await request(app).get("/login");
 
