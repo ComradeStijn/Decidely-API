@@ -6,7 +6,7 @@ import { User } from "@prisma/client";
 async function retrieveForms(req: Request, res: Response, next: NextFunction) {
   try {
     const user = req.user as User | undefined;
-
+    console.log(user)
     if (!user) {
       res.status(401).json({ success: false, message: "No user found" });
       return;
@@ -25,6 +25,7 @@ async function retrieveForms(req: Request, res: Response, next: NextFunction) {
         title: decision.title,
       })),
     }));
+
 
     res.json(returnObject);
   } catch (e) {
