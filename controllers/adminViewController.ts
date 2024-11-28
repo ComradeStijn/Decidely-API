@@ -17,7 +17,7 @@ async function viewAllForms(req: Request, res: Response, next: NextFunction) {
       return result;
     });
 
-    res.json(forms);
+    res.json({ success: true, message: forms });
     return;
   } catch (e) {
     next(e);

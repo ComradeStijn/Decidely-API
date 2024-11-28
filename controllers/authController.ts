@@ -42,8 +42,8 @@ async function login(
       expiresIn: "1h",
     });
 
-    res.json({ success: true, message: {token: jsontoken }});
-    return
+    res.json({ success: true, message: { token: jsontoken } });
+    return;
   } catch (err) {
     next(err);
   }

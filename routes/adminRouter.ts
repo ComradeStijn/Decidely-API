@@ -12,6 +12,6 @@ router.get("/check", (req: Request, res: Response) => {
 
 router.get("/forms", adminViewController.viewAllForms);
 
-router.post("/forms", adminCreateController.createForm);
+router.post("/forms", adminCreateController.postForm);
 
 export default router;

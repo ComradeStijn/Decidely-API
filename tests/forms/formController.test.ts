@@ -81,7 +81,7 @@ describe("Retrieve Form", () => {
     const response = await request(app).get("/forms");
 
     expect(response.status).toBe(200);
-    expect(response.body).toEqual([]);
+    expect(response.body.message).toEqual([]);
   });
 
   it("Retrieve two forms", async () => {
@@ -149,6 +149,6 @@ describe("Retrieve Form", () => {
       },
     ];
     expect(response.status).toBe(200);
-    expect(response.body).toEqual(expectedReturn);
+    expect(response.body.message).toEqual(expectedReturn);
   });
 });
