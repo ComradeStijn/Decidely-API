@@ -4,6 +4,7 @@ import { prismaClient } from "../app";
 import { z } from "zod";
 import { createForm } from "../services/formServices";
 import { createNewUser } from "../services/userServices";
+import { checkRelationUser } from "../services/relationCheckServices";
 
 const createFormSchema = z.object({
   title: z.string().trim(),
@@ -58,7 +59,7 @@ async function postUser(req: Request, res: Response, next: NextFunction) {
     }
 
     await prismaClient.$transaction(async (tx) => {
-      const response = await createNewUser(
+      const user = await createNewUser(
         tx,
         username,
         amount,
@@ -66,7 +67,7 @@ async function postUser(req: Request, res: Response, next: NextFunction) {
         email,
         role
       );
-      return response;
+      await checkRelationUser(tx, user.id, userGroupId)
     });
 
     res.json({ success: true, message: "User created" });
