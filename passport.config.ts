@@ -38,7 +38,7 @@ passport.use(
   new Strategy(opts, async (jwtPayload: Payload, done: VerifiedCallback) => {
     try {
       const userId = jwtPayload.sub;
-
+      
       const user: User | null = await findUserById(prismaClient, userId);
       if (user) {
         return done(null, user);

@@ -3,10 +3,7 @@ import passport from '../passport.config'
 
 const router = Router();
 
-router.get(
-  "/",
-  passport.authenticate("jwt", { session: false }),
-  (req: Request, res: Response) => {
+router.get("/", passport.authenticate("jwt", { session: false }), (req: Request, res: Response) => {
     res.status(200).json({ success: true, message: "Protect success" });
     return;
   }

@@ -27,7 +27,11 @@ vi.mock("../../passport.config", () => ({
 }));
 
 beforeEach(() => {
-  vi.resetAllMocks();
+  vi.clearAllMocks();
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
 });
 
 describe("Vote on form", () => {

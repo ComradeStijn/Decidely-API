@@ -10,7 +10,11 @@ vi.mock('../../services/userServices', () => ({
 const validateUser = vi.mocked(originalValidateUser);
 
 beforeEach(() => {
-  vi.resetAllMocks();
+  vi.clearAllMocks();
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
 });
 
 describe("userLogin", () => {
