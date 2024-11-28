@@ -1,12 +1,13 @@
 import { NextFunction, Request, Response } from "express";
 import { prismaClient } from "../app";
 import { findAllFormsByUser } from "../services/formServices";
-import { User } from "@prisma/client";
+import { Decision, User } from "@prisma/client";
+import { voteUserOnForm } from "../services/votingServices";
 
 async function retrieveForms(req: Request, res: Response, next: NextFunction) {
   try {
     const user = req.user as User | undefined;
-    console.log(user)
+
     if (!user) {
       res.status(401).json({ success: false, message: "No user found" });
       return;
@@ -26,8 +27,44 @@ async function retrieveForms(req: Request, res: Response, next: NextFunction) {
       })),
     }));
 
-
     res.json(returnObject);
+  } catch (e) {
+    next(e);
+  }
+}
+
+type receivedDecision = {
+  decision: string;
+  amount: number;
+};
+
+async function voteOnForm(req: Request, res: Response, next: NextFunction) {
+  try {
+    const user = req.user as User | undefined;
+    const { formId } = req.params;
+    const decisions: receivedDecision[] = req.body.decisions;
+
+    if (!user) {
+      res.status(401).json({ success: false, message: "No user found" });
+      return;
+    }
+
+    const result = await prismaClient.$transaction(async (tx) => {
+      const vote = await voteUserOnForm(tx, user.id, formId, decisions);
+      return vote;
+    });
+
+    if (!result) {
+      res
+        .status(400)
+        .json({ success: false, message: "form or decision data incorrect" });
+      return;
+    } else {
+      res
+        .status(200)
+        .json({ success: true, message: `Form ${formId} vote success` });
+      return;
+    }
   } catch (e) {
     next(e);
   }
@@ -35,4 +72,5 @@ async function retrieveForms(req: Request, res: Response, next: NextFunction) {
 
 export default {
   retrieveForms,
+  voteOnForm,
 };

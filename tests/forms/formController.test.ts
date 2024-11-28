@@ -1,13 +1,17 @@
 import request from "supertest";
 import { app } from "../../app";
 import * as formService from "../../services/formServices";
+import * as votingService from "../../services/votingServices"
 import { NextFunction, Request, Response } from "express";
 import { Mock } from "vitest";
-import passport from "../../passport.config";
 
 vi.mock("../../services/formServices", () => ({
   findAllFormsByUser: vi.fn(),
 }));
+
+vi.mock("../../services/votingServices", () => ({
+  voteUserOnForm: vi.fn()
+}))
 
 let user: Boolean = false
 vi.mock("../../passport.config", () => ({
@@ -26,8 +30,41 @@ beforeEach(() => {
   vi.resetAllMocks();
 });
 
+describe("Vote on form", () => {
+  it("No user", async() => {
+    user = false;
+    const response = await request(app).put('/forms/1')
+    expect(response.status).toBe(401);
+    expect(response.body.success).toBe(false)
+    expect(response.body.message.toLowerCase()).toContain("no user")
+  })
+
+  it("Invalid form", async() => {
+    user = true;
+    (votingService.voteUserOnForm as Mock).mockResolvedValue(null);
+
+    const response = await request(app).put("/forms/1")
+
+    expect(response.status).toBe(400)
+    expect(response.body.success).toBe(false)
+    expect(response.body.message.toLowerCase()).toContain("form or decision")
+  })
+
+  it("Valid form", async () => {
+    user = true;
+    (votingService.voteUserOnForm as Mock).mockResolvedValue(true);
+
+    const response = await request(app).put("/forms/1")
+
+    expect(response.status).toBe(200)
+    expect(response.body.success).toBe(true)
+    expect(response.body.message.toLowerCase()).toContain("form 1 vote success")
+  })
+})
+
 describe("Retrieve Form", () => {
   it("No user", async () => {
+    user = false;
     const response = await request(app).get("/forms");
 
     expect(response.status).toBe(401);

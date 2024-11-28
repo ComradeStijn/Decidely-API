@@ -5,6 +5,6 @@ const router = Router();
 
 router.get("/", formController.retrieveForms);
 
-router.post
+router.put("/:formId", formController.voteOnForm)
 
 export default router;

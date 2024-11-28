@@ -22,32 +22,60 @@ beforeEach(async () => {
 });
 
 describe("Voting", async () => {
-  
+  it("Form does not exist", async () => {
+    await client.$transaction(async (tx) => {
+      const group = await createNewUserGroup(tx, "Voter Group");
+      const user = await createNewUser(tx, "Voter2", 1, group.id);
+      const result = await voteUserOnForm(tx, user.id, "231", [
+        { decision: "Decision 1", amount: 1 },
+        { decision: "Decision 2", amount: 2 },
+      ]);
+
+      expect(result).toBeNull();
+    });
+  });
+
+  it("Decision not structured correctly", async () => {
+    await client.$transaction(async (tx) => {
+      const group = await createNewUserGroup(tx, "Decision group")
+      const user = await createNewUser(tx, "Decision Voter", 1, group.id)
+      const form = await createForm(tx, "Decision Form", [
+        "Decision 44",
+        "Decision 55"
+      ])
+      await assignFormToGroup(tx, form.id, group.id)
+
+      const result = await voteUserOnForm(tx, user.id, form.id, [
+        { decision: "Wrongwrong", amount: 3},
+        { decision: "wrongwrongwrong", amount: 1}
+      ])
+    })
+  });
 
   it("User vote", async () => {
     await client.$transaction(async (tx) => {
-      const group = await createNewUserGroup(tx, "VotingGroup");
-      const user = await createNewUser(tx, "Voter1", 1, group.id);
+      const group = await createNewUserGroup(tx, "VotingGroup1");
+      const user = await createNewUser(tx, "Voter13", 1, group.id);
       const form = await createForm(tx, "Voting Form", [
-        "Decision 1",
-        "Decision 2",
+        "Decision 13",
+        "Decision 23",
       ]);
       await assignFormToGroup(tx, form.id, group.id);
 
       const result = await voteUserOnForm(tx, user.id, form.id, [
-        { decision: "Decision 1", amount: 1 },
-        { decision: "Decision 2", amount: 2 },
+        { decision: "Decision 13", amount: 1 },
+        { decision: "Decision 23", amount: 2 },
       ]);
       const decision1 = await tx.decision.findFirst({
         where: {
-          title: "Decision 1",
+          title: "Decision 13",
         },
       });
       const decision2 = await tx.decision.findFirst({
-        where: { title: "Decision 2" },
+        where: { title: "Decision 23" },
       });
       if (!decision1 || !decision2) {
-        throw new Error("Decision 1 or 2");
+        throw new Error("Decision 13 or 23");
       }
 
       expect(result).not.toBeNull();
@@ -65,7 +93,7 @@ describe("Voting", async () => {
         "Decision 2",
       ]);
       await assignFormToGroup(tx, form.id, group.id);
-      
+
       await voteUserOnForm(tx, user.id, form.id, [
         { decision: "Decision 1", amount: 1 },
         { decision: "Decision 2", amount: 2 },
@@ -94,7 +122,7 @@ describe("Voting", async () => {
         "Decision 2",
       ]);
       await assignFormToGroup(tx, form.id, group.id);
-      
+
       await voteUserOnForm(tx, user1.id, form.id, [
         { decision: "Decision 1", amount: 1 },
         { decision: "Decision 2", amount: 2 },
