@@ -9,35 +9,40 @@ export async function voteUserOnForm(
     amount: number;
   }[]
 ) {
-  await client.userForm.update({
-    where: {
-      userId_formId: {
-        userId: userid,
-        formId: formid,
+  try {
+    await client.userForm.update({
+      where: {
+        userId_formId: {
+          userId: userid,
+          formId: formid,
+        },
       },
-    },
-    data: {
-      hasVoted: true,
-    },
-  });
+      data: {
+        hasVoted: true,
+      },
+    });
 
-  return await Promise.all(
-    votes.map((vote) => {
-      return client.decision.update({
-        where: {
-          formId_title: {
-            formId: formid,
-            title: vote.decision,
+    return await Promise.all(
+      votes.map((vote) => {
+        return client.decision.update({
+          where: {
+            formId_title: {
+              formId: formid,
+              title: vote.decision,
+            },
           },
-        },
-        data: {
-          votes: {
-            increment: vote.amount,
+          data: {
+            votes: {
+              increment: vote.amount,
+            },
           },
-        },
-      });
-    })
-  );
+        });
+      })
+    );
+  } catch (e: any) {
+    console.error(`Error ${e.code}: ${e.message}`);
+    return null;
+  }
 }
 
 export async function hasUserVoted(

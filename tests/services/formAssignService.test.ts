@@ -4,9 +4,9 @@ import {
   assignFormToUser,
   removeFormFromGroup,
   removeFormFromUser,
-} from "../services/formAssignService";
-import { createForm } from "../services/formServices";
-import { createNewUser, createNewUserGroup } from "../services/userServices";
+} from "../../services/formAssignService";
+import { createForm } from "../../services/formServices";
+import { createNewUser, createNewUserGroup } from "../../services/userServices";
 
 let client: PrismaClient;
 beforeEach(async () => {

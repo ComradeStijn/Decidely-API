@@ -9,6 +9,25 @@ export async function findAllForms(client: Prisma.TransactionClient) {
   return result;
 }
 
+export async function findAllFormsByUser(
+  client: Prisma.TransactionClient,
+  userId: string
+) {
+  const result = await client.userForm.findMany({
+    where: {
+      userId: userId,
+    },
+    select: {
+      form: {
+        include: {
+          decisions: true,
+        },
+      },
+    },
+  });
+  return result;
+}
+
 export async function findFormByTitle(
   client: Prisma.TransactionClient,
   title: string
@@ -47,10 +66,7 @@ export async function createForm(
   return form;
 }
 
-export async function deleteForm(
-  client: Prisma.TransactionClient,
-  id: string
-) {
+export async function deleteForm(client: Prisma.TransactionClient, id: string) {
   const result = await client.form.delete({
     where: { id: id },
     include: { decisions: true },

@@ -38,6 +38,18 @@ export async function findUserByName(
   return result;
 }
 
+export async function findUserById(
+  client: Prisma.TransactionClient,
+  userid: string
+) {
+  const result = await client.user.findUnique({
+    where: {
+      id: userid,
+    },
+  });
+  return result;
+}
+
 export async function createNewUser(
   client: Prisma.TransactionClient,
   username: string,
@@ -157,12 +169,12 @@ export async function deleteUserGroup(
 
 export async function validateUser(
   client: Prisma.TransactionClient,
-  userid: string,
+  userName: string,
   token: string
 ) {
   const user = await client.user.findUnique({
     where: {
-      id: userid,
+      name: userName,
     },
   });
 
