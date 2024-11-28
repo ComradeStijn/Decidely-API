@@ -3,12 +3,12 @@ Backend server for Decidely App
 
 
 ## Finished
-+ none
-## WIP
 + Database service layer
++ Authentication and authorization
++ User Routes + Controllers
+## WIP
++ Admin Routers + controllers
 
 ## Todo
 + Security
-+ Authentication and authorization
-+ Routing
-+ Controllers
+
