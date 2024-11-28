@@ -6,7 +6,7 @@ import { validateUser } from "../services/userServices";
 import { prismaClient } from "../app";
 dotenv.config();
 
-export async function login(
+async function login(
   req: Request,
   res: Response,
   next: NextFunction
