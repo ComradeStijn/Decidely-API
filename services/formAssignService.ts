@@ -19,7 +19,7 @@ export async function assignFormToGroup(
       users: true,
     },
   });
-  if (!group) return null;
+  if (!group) return result;
 
   await Promise.all(
     group.users.map((user) => assignFormToUser(client, formid, user.id))

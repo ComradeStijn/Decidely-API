@@ -11,16 +11,25 @@ router.get("/check", (req: Request, res: Response) => {
   return;
 });
 
+// Get all Forms
 router.get("/forms", adminViewController.getAllForms);
 
+// Create Form
 router.post("/forms", adminCreateController.postForm);
 
+// Get all Users
 router.get("/users", adminViewController.getAllUsers);
 
+// Create user
 router.post("/users", adminCreateController.postUser);
 
-router.post("/assign", adminAssignController.putUserToGroup);
+// Assign User to Group
+router.post("/users/assign", adminAssignController.putUserToGroup);
 
+// Create Group
 router.post("/groups", adminCreateController.postUserGroup);
+
+// Assign Group to Form
+router.post("/groups/assign", adminAssignController.putGroupToForm);
 
 export default router;

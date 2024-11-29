@@ -3,6 +3,7 @@ import { NextFunction, Request, Response } from "express";
 import { z } from "zod";
 import { prismaClient } from "../app";
 import { changeUserGroup } from "../services/userServices";
+import { assignFormToGroup } from "../services/formAssignService";
 
 const assignUserToGroupSchema = z.object({
   userId: z.string().trim(),
@@ -17,6 +18,7 @@ async function putUserToGroup(req: Request, res: Response, next: NextFunction) {
 
     if (!user) {
       res.status(401).json({ success: false, message: "No user found" });
+      return;
     }
 
     const newUser = await prismaClient.$transaction(async (tx) => {
@@ -34,6 +36,36 @@ async function putUserToGroup(req: Request, res: Response, next: NextFunction) {
   }
 }
 
+const assignFormToGroupSchema = z.object({
+  groupId: z.string().trim(),
+  formId: z.string().trim(),
+});
+
+async function putGroupToForm(req: Request, res: Response, next: NextFunction) {
+  try {
+    const user = req.user as User | undefined;
+    const parsedData = assignFormToGroupSchema.parse(req.body);
+    const { groupId, formId } = parsedData;
+
+    if (!user) {
+      res.status(401).json({ success: false, message: "No user found" });
+      return;
+    }
+
+    const groupForm = await prismaClient.$transaction(async (tx) => {
+      const result = await assignFormToGroup(tx, formId, groupId);
+      return result;
+    });
+
+    res.json({ success: true, message: groupForm });
+  } catch (e) {
+    if (e instanceof z.ZodError) {
+      res.status(400).json({ success: false, message: e.message });
+    }
+  }
+}
+
 export default {
   putUserToGroup,
+  putGroupToForm,
 };
