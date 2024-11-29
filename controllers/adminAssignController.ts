@@ -4,12 +4,15 @@ import { z } from "zod";
 import { prismaClient } from "../app";
 import { changeUserGroup } from "../services/userServices";
 import { assignFormToGroup } from "../services/formAssignService";
+import { checkRelationUser } from "../services/relationCheckServices";
 
 const assignUserToGroupSchema = z.object({
   userId: z.string().trim(),
   groupId: z.string().trim(),
 });
 
+
+// Note: This controller is disabled. Functionality only allows user to be permanently assigned to group
 async function putUserToGroup(req: Request, res: Response, next: NextFunction) {
   try {
     const user = req.user as User | undefined;

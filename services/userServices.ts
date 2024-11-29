@@ -2,7 +2,11 @@ import { Prisma, PrismaClient } from "@prisma/client";
 import crypto from "crypto";
 
 export async function findAllUsers(client: Prisma.TransactionClient) {
-  const result = await client.user.findMany();
+  const result = await client.userGroup.findMany({
+    include: {
+      users: true
+    }
+  });
   return result;
 }
 

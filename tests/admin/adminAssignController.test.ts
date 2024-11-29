@@ -49,63 +49,63 @@ afterEach(() => {
   vi.resetAllMocks();
 });
 
-describe("Assign User to Group", () => {
-  it("No body", async () => {
-    const response = await request(app).post("/admin/users/assign");
+// describe("Assign User to Group", () => {
+//   it("No body", async () => {
+//     const response = await request(app).post("/admin/users/assign");
 
-    expect(response.status).toBe(400);
-    expect(response.body.success).toBe(false);
-  });
+//     expect(response.status).toBe(400);
+//     expect(response.body.success).toBe(false);
+//   });
 
-  it("Incorrect userId", async () => {
-    const response = await request(app).post("/admin/users/assign").send({
-      userId: 2,
-      groupId: "2",
-    });
+//   it("Incorrect userId", async () => {
+//     const response = await request(app).post("/admin/users/assign").send({
+//       userId: 2,
+//       groupId: "2",
+//     });
 
-    expect(response.status).toBe(400);
-    expect(response.body.success).toBe(false);
-  });
+//     expect(response.status).toBe(400);
+//     expect(response.body.success).toBe(false);
+//   });
 
-  it("No userId", async () => {
-    const response = await request(app).post("/admin/users/assign").send({
-      groupId: "2",
-    });
+//   it("No userId", async () => {
+//     const response = await request(app).post("/admin/users/assign").send({
+//       groupId: "2",
+//     });
 
-    expect(response.status).toBe(400);
-    expect(response.body.success).toBe(false);
-  });
+//     expect(response.status).toBe(400);
+//     expect(response.body.success).toBe(false);
+//   });
 
-  it("Incorrect groupId", async () => {
-    const response = await request(app).post("/admin/users/assign").send({
-      userId: "2",
-      groupId: 2,
-    });
+//   it("Incorrect groupId", async () => {
+//     const response = await request(app).post("/admin/users/assign").send({
+//       userId: "2",
+//       groupId: 2,
+//     });
 
-    expect(response.status).toBe(400);
-    expect(response.body.success).toBe(false);
-  });
+//     expect(response.status).toBe(400);
+//     expect(response.body.success).toBe(false);
+//   });
 
-  it("No groupId", async () => {
-    const response = await request(app).post("/admin/users/assign").send({
-      userId: "2",
-    });
+//   it("No groupId", async () => {
+//     const response = await request(app).post("/admin/users/assign").send({
+//       userId: "2",
+//     });
 
-    expect(response.status).toBe(400);
-    expect(response.body.success).toBe(false);
-  });
+//     expect(response.status).toBe(400);
+//     expect(response.body.success).toBe(false);
+//   });
 
-  it("Correct body", async () => {
-    vi.mocked(changeUserGroup).mockResolvedValue({ test: true } as any);
-    const response = await request(app).post("/admin/users/assign").send({
-      userId: "2",
-      groupId: "2",
-    });
+//   it("Correct body", async () => {
+//     vi.mocked(changeUserGroup).mockResolvedValue({ test: true } as any);
+//     const response = await request(app).post("/admin/users/assign").send({
+//       userId: "2",
+//       groupId: "2",
+//     });
 
-    expect(response.status).toBe(200);
-    expect(response.body.message).toStrictEqual({ test: true });
-  });
-});
+//     expect(response.status).toBe(200);
+//     expect(response.body.message).toStrictEqual({ test: true });
+//   });
+// });
 
 describe("Assign Form to Group", () => {
   it("No body", async () => {

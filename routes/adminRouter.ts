@@ -35,7 +35,12 @@ router.delete("/users", adminDeleteController.deleteUserController);
 router.put("/users/proxy", adminModifyController.modifyProxy);
 
 // Assign User to Group
-router.post("/users/assign", adminAssignController.putUserToGroup);
+// Note: Currently, user is permanently assigned to group
+// 
+// router.post("/users/assign", adminAssignController.putUserToGroup);
+
+// Get all Groups
+router.post("/groups", )
 
 // Create Group
 router.post("/groups", adminCreateController.postUserGroup);
