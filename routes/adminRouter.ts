@@ -2,6 +2,8 @@ import { Request, Response, Router } from "express";
 import adminViewController from "../controllers/adminViewController";
 import adminCreateController from "../controllers/adminCreateController";
 import adminAssignController from "../controllers/adminAssignController";
+import adminModifyController from "../controllers/adminModifyController";
+import adminDeleteController from "../controllers/adminDeleteController";
 
 const router = Router();
 
@@ -17,11 +19,17 @@ router.get("/forms", adminViewController.getAllForms);
 // Create Form
 router.post("/forms", adminCreateController.postForm);
 
+// Delete Form
+router.delete("/forms", adminDeleteController.deleteFormController);
+
 // Get all Users
 router.get("/users", adminViewController.getAllUsers);
 
 // Create user
 router.post("/users", adminCreateController.postUser);
+
+// Change User Proxy
+router.put("/users/proxy", adminModifyController.modifyProxy);
 
 // Assign User to Group
 router.post("/users/assign", adminAssignController.putUserToGroup);
