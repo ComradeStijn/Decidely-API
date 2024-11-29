@@ -29,18 +29,23 @@ afterEach(() => {
   vi.resetAllMocks();
 });
 
-describe("Admin Form", () => {
+describe("Admin View", () => {
   it("Forms gets found", async () => {
     const response = await request(app).get("/admin/forms");
 
     expect(response.status).toBe(200);
   });
-});
 
-describe("Admin Users", () => {
   it("Users get found", async () => {
     const response = await request(app).get("/admin/users");
 
     expect(response.status).toBe(200);
   })
-})
+
+  it("Users get found", async () => {
+    const response = await request(app).get("/admin/groups");
+
+    expect(response.status).toBe(200);
+  })
+});
+

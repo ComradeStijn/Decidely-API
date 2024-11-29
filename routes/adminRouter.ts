@@ -40,7 +40,7 @@ router.put("/users/proxy", adminModifyController.modifyProxy);
 // router.post("/users/assign", adminAssignController.putUserToGroup);
 
 // Get all Groups
-router.post("/groups", )
+router.get("/groups", adminViewController.getAllGroups)
 
 // Create Group
 router.post("/groups", adminCreateController.postUserGroup);
