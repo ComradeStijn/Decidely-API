@@ -30,10 +30,17 @@ afterEach(() => {
 });
 
 describe("Admin Form", () => {
-  it("Form gets found", async () => {
+  it("Forms gets found", async () => {
     const response = await request(app).get("/admin/forms");
-    console.log(response.body);
 
     expect(response.status).toBe(200);
   });
 });
+
+describe("Admin Users", () => {
+  it("Users get found", async () => {
+    const response = await request(app).get("/admin/users");
+
+    expect(response.status).toBe(200);
+  })
+})

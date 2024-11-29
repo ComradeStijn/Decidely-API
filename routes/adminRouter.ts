@@ -10,11 +10,11 @@ router.get("/check", (req: Request, res: Response) => {
   return;
 });
 
-router.get("/forms", adminViewController.viewAllForms);
+router.get("/forms", adminViewController.getAllForms);
 
 router.post("/forms", adminCreateController.postForm);
 
-// router.get("/users", adminViewController.viewAllUsers);
+router.get("/users", adminViewController.getAllUsers);
 
 router.post("/users", adminCreateController.postUser);
 
