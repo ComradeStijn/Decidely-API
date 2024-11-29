@@ -27,7 +27,7 @@ async function retrieveForms(req: Request, res: Response, next: NextFunction) {
       })),
     }));
 
-    res.json(returnObject);
+    res.json({ success: true, message: returnObject });
   } catch (e) {
     next(e);
   }

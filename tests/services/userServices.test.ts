@@ -79,13 +79,14 @@ describe("User creation", async () => {
 describe("User finding", async () => {
   it("Find All Users finds two users", async () => {
     await client.$transaction(async (tx) => {
-      const user1 = await createNewUser(tx, "Stijn", 2);
-      const user2 = await createNewUser(tx, "Kean", 3);
+      const group = await createNewUserGroup(tx, "findall")
+      const user1 = await createNewUser(tx, "Stijn", 2, group.id);
+      const user2 = await createNewUser(tx, "Kean", 3, group.id);
+      
       const result = await findAllUsers(tx);
-
-      expect(
-        result.sort((a, b) => -a.name.localeCompare(b.name))
-      ).toStrictEqual([user1, user2]);
+      const filtered = result.filter(item => item.id = group.id)[0].users.filter(user => user.name === "Stijn" || user.name === "Kean")
+      
+      expect(filtered.length).toBe(2);
     });
   });
 

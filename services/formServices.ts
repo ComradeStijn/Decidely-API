@@ -4,6 +4,18 @@ export async function findAllForms(client: Prisma.TransactionClient) {
   const result = await client.form.findMany({
     include: {
       decisions: true,
+      userForms: {
+        select: {
+          hasVoted: true,
+          user: {
+            select: {
+              id: true,
+              name: true,
+              proxyAmount: true
+            }
+          }
+        }
+      }
     },
   });
   return result;
@@ -59,11 +71,12 @@ export async function createForm(
       formId: form.id,
     })),
   });
-  await client.form.findUnique({
+  const newForm = await client.form.findUnique({
     where: { title: title },
     include: { decisions: true },
   });
-  return form;
+
+  return newForm!;
 }
 
 export async function deleteForm(client: Prisma.TransactionClient, id: string) {
