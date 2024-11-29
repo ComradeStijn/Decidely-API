@@ -1,7 +1,7 @@
 import request from "supertest";
 import { app } from "../../app";
 import { Request, Response, NextFunction } from "express";
-import { createNewUser } from "../../services/userServices";
+import { createNewUser, createNewUserGroup } from "../../services/userServices";
 
 vi.mock("../../passport.config", async () => {
   const original = await vi.importActual("../../passport.config");
@@ -27,13 +27,14 @@ vi.mock("../../services/userServices", async () => {
 
   return {
     ...original,
-    createNewUser: vi.fn()
+    createNewUser: vi.fn(),
+    createNewUserGroup: vi.fn(),
   };
 });
 
 vi.mock("../../services/relationCheckServices", async () => {
   return {
-    checkRelationUser: vi.fn()
+    checkRelationUser: vi.fn(),
   };
 });
 
@@ -224,7 +225,7 @@ describe("Create user", () => {
   });
 
   it("Correct structure", async () => {
-    vi.mocked(createNewUser).mockResolvedValue({test: true} as any)
+    vi.mocked(createNewUser).mockResolvedValue({ test: true } as any);
     const response = await request(app).post("/admin/users").send({
       username: "test",
       amount: 1,
@@ -235,6 +236,35 @@ describe("Create user", () => {
 
     expect(response.status).toBe(200);
     expect(response.body.success).toBe(true);
-    expect(response.body.message).toMatchObject({test: true});
+    expect(response.body.message).toMatchObject({ test: true });
+  });
+});
+
+describe("Create Group", () => {
+  it("No information in body", async () => {
+    const response = await request(app).post("/admin/groups");
+
+    expect(response.status).toBe(400);
+    expect(response.body.success).toBe(false);
+  });
+
+  it("Incorrect groupName", async () => {
+    const response = await request(app).post("/admin/groups").send({
+      groupName: 2,
+    });
+
+    expect(response.status).toBe(400);
+    expect(response.body.success).toBe(false);
+  });
+
+  it("Correct structure", async () => {
+    vi.mocked(createNewUserGroup).mockResolvedValue({ test: true } as any);
+    const response = await request(app).post("/admin/groups").send({
+      groupName: "test",
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.body.success).toBe(true);
+    expect(response.body.message).toEqual({ test: true });
   });
 });

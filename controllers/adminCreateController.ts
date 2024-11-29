@@ -3,7 +3,7 @@ import { NextFunction, Request, Response } from "express";
 import { prismaClient } from "../app";
 import { z } from "zod";
 import { createForm } from "../services/formServices";
-import { createNewUser } from "../services/userServices";
+import { createNewUser, createNewUserGroup } from "../services/userServices";
 import { checkRelationUser } from "../services/relationCheckServices";
 
 const createFormSchema = z.object({
@@ -81,7 +81,37 @@ async function postUser(req: Request, res: Response, next: NextFunction) {
   }
 }
 
+const createUserGroupSchema = z.object({
+  groupName: z.string(),
+});
+
+async function postUserGroup(req: Request, res: Response, next: NextFunction) {
+  try {
+    const user = req.user as User | undefined;
+    const parsedData = createUserGroupSchema.parse(req.body);
+    const { groupName } = parsedData;
+
+    if (!user) {
+      res.status(401).json({ success: false, message: "No user found" });
+    }
+
+    const group = await prismaClient.$transaction(async (tx) => {
+      const result = await createNewUserGroup(tx, groupName);
+      return result;
+    });
+
+    res.json({ success: true, message: group });
+  } catch (e) {
+    if (e instanceof z.ZodError) {
+      res.status(400).json({ success: false, message: e.message });
+      return;
+    }
+    next(e);
+  }
+}
+
 export default {
   postForm,
-  postUser
+  postUser,
+  postUserGroup,
 };

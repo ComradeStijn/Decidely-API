@@ -21,4 +21,6 @@ router.post("/users", adminCreateController.postUser);
 
 router.post("/assign", adminAssignController.putUserToGroup);
 
+router.post("/groups", adminCreateController.postUserGroup);
+
 export default router;
