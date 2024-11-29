@@ -28,6 +28,9 @@ router.get("/users", adminViewController.getAllUsers);
 // Create user
 router.post("/users", adminCreateController.postUser);
 
+// Delete user
+router.delete("/users", adminDeleteController.deleteUserController);
+
 // Change User Proxy
 router.put("/users/proxy", adminModifyController.modifyProxy);
 
