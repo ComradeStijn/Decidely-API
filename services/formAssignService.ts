@@ -51,10 +51,12 @@ export async function removeFormFromGroup(
     where: { id: groupid },
     include: { users: true },
   });
-  if (!group) return null;
+  if (!group) {
+    throw new Error("groupId does not correspond to a known group")
+  };
 
   const result = await Promise.all(
-    group.users.map((user) => removeFormFromUser(client, formid, user.name))
+    group.users.map((user) => removeFormFromUser(client, formid, user.id))
   );
   return result;
 }

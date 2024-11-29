@@ -75,7 +75,8 @@ export async function createForm(
     where: { title: title },
     include: { decisions: true },
   });
-  return newForm;
+
+  return newForm!;
 }
 
 export async function deleteForm(client: Prisma.TransactionClient, id: string) {

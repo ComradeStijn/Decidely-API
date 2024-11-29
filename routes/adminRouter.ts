@@ -48,4 +48,7 @@ router.post("/groups", adminCreateController.postUserGroup);
 // Assign Group to Form
 router.post("/groups/assign", adminAssignController.putGroupToForm);
 
+// Deassign Group to Form
+router.delete("/groups/assign", adminAssignController.deleteGroupToForm)
+
 export default router;
