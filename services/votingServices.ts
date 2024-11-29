@@ -10,6 +10,18 @@ export async function voteUserOnForm(
   }[]
 ) {
   try {
+    const alreadyVoted = await client.userForm.findUnique({
+      where: {
+        userId_formId: {
+          userId: userid,
+          formId: formid
+        }
+      }
+    })
+
+    if (!alreadyVoted) throw new Error("No userForm found");
+    if (alreadyVoted.hasVoted) throw new Error("Already voted")
+
     await client.userForm.update({
       where: {
         userId_formId: {

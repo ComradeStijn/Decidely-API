@@ -58,6 +58,15 @@ export async function removeFormFromGroup(
   const result = await Promise.all(
     group.users.map((user) => removeFormFromUser(client, formid, user.id))
   );
+
+  await client.userGroupForm.delete({
+    where: {
+      groupId_formId: {
+        groupId: groupid,
+        formId: formid
+      }
+    }
+  })
   return result;
 }
 
