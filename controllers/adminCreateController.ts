@@ -43,7 +43,7 @@ const createUserSchema = z.object({
   amount: z.number().int().min(1),
   userGroupId: z.string(),
   email: z.string().email().optional(),
-  role: z.string(),
+  role: z.string().toLowerCase(),
 });
 
 async function postUser(req: Request, res: Response, next: NextFunction) {

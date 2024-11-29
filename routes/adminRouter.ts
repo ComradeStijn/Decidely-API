@@ -14,4 +14,8 @@ router.get("/forms", adminViewController.viewAllForms);
 
 router.post("/forms", adminCreateController.postForm);
 
+// router.get("/users", adminViewController.viewAllUsers);
+
+router.post("/users", adminCreateController.postUser);
+
 export default router;
