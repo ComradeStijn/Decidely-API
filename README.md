@@ -6,9 +6,11 @@ Backend server for Decidely App
 + Database service layer
 + Authentication and authorization
 + User Routes + Controllers
++ Security
++ Admin Routers + Controllers
+
 ## WIP
-+ Admin Routers + controllers
 
 ## Todo
-+ Security
+
 
