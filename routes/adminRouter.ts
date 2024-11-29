@@ -1,6 +1,7 @@
 import { Request, Response, Router } from "express";
 import adminViewController from "../controllers/adminViewController";
 import adminCreateController from "../controllers/adminCreateController";
+import adminAssignController from "../controllers/adminAssignController";
 
 const router = Router();
 
@@ -17,5 +18,7 @@ router.post("/forms", adminCreateController.postForm);
 router.get("/users", adminViewController.getAllUsers);
 
 router.post("/users", adminCreateController.postUser);
+
+router.post("/assign", adminAssignController.putUserToGroup);
 
 export default router;

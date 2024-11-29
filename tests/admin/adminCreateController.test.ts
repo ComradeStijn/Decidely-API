@@ -2,7 +2,6 @@ import request from "supertest";
 import { app } from "../../app";
 import { Request, Response, NextFunction } from "express";
 import { createNewUser } from "../../services/userServices";
-import { Mock } from "vitest";
 
 vi.mock("../../passport.config", async () => {
   const original = await vi.importActual("../../passport.config");
@@ -99,7 +98,7 @@ describe("Create Form", () => {
 
     expect(response.status).toBe(200);
     expect(response.body.success).toBe(true);
-    expect(response.body.message.toLowerCase()).toContain("form created");
+    expect(response.body.message).not.toBeNull();
   });
 });
 
@@ -225,7 +224,7 @@ describe("Create user", () => {
   });
 
   it("Correct structure", async () => {
-    vi.mocked(createNewUser).mockResolvedValue(true as any)
+    vi.mocked(createNewUser).mockResolvedValue({test: true} as any)
     const response = await request(app).post("/admin/users").send({
       username: "test",
       amount: 1,
@@ -236,6 +235,6 @@ describe("Create user", () => {
 
     expect(response.status).toBe(200);
     expect(response.body.success).toBe(true);
-    expect(response.body.message.toLowerCase()).toContain("user created");
+    expect(response.body.message).toMatchObject({test: true});
   });
 });

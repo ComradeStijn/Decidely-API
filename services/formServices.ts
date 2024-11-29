@@ -71,11 +71,11 @@ export async function createForm(
       formId: form.id,
     })),
   });
-  await client.form.findUnique({
+  const newForm = await client.form.findUnique({
     where: { title: title },
     include: { decisions: true },
   });
-  return form;
+  return newForm;
 }
 
 export async function deleteForm(client: Prisma.TransactionClient, id: string) {

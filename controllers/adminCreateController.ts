@@ -22,12 +22,12 @@ async function postForm(req: Request, res: Response, next: NextFunction) {
       return;
     }
 
-    await prismaClient.$transaction(async (tx) => {
+    const form = await prismaClient.$transaction(async (tx) => {
       const response = await createForm(tx, title, decisions);
       return response;
     });
 
-    res.json({ success: true, message: "Form created" });
+    res.json({ success: true, message: form });
     return;
   } catch (e) {
     if (e instanceof z.ZodError) {
@@ -58,8 +58,8 @@ async function postUser(req: Request, res: Response, next: NextFunction) {
       return;
     }
 
-    await prismaClient.$transaction(async (tx) => {
-      const user = await createNewUser(
+    const newUser = await prismaClient.$transaction(async (tx) => {
+      const result = await createNewUser(
         tx,
         username,
         amount,
@@ -67,10 +67,11 @@ async function postUser(req: Request, res: Response, next: NextFunction) {
         email,
         role
       );
-      await checkRelationUser(tx, user.id, userGroupId)
+      await checkRelationUser(tx, result.id, userGroupId);
+      return result;
     });
 
-    res.json({ success: true, message: "User created" });
+    res.json({ success: true, message: newUser });
   } catch (e) {
     if (e instanceof z.ZodError) {
       res.status(400).json({ success: false, message: e.message });
