@@ -3,24 +3,13 @@ import { app } from "../../app";
 import { Request, Response, NextFunction } from "express";
 import { createNewUser, createNewUserGroup } from "../../services/userServices";
 
-vi.mock("../../passport.config", async () => {
-  const original = await vi.importActual("../../passport.config");
-
-  return {
-    default: {
-      ...original,
-      authenticate: vi
-        .fn()
-        .mockImplementation(
-          (strategy, options) =>
-            (req: Request, res: Response, next: NextFunction) => {
-              req.user = { id: 1, role: "admin" };
-              next();
-            }
-        ),
-    },
-  };
-});
+vi.mock("../../lib/authenticateWrapper", () => ({
+  authenticateUser: vi.fn().mockImplementation(() => {
+    return (req: Request, res: Response, next: NextFunction) => {
+      (req.user = { id: 1, role: "admin" }), next();
+    };
+  }),
+}));
 
 vi.mock("../../services/userServices", async () => {
   const original = vi.importActual("../../services/userServices");

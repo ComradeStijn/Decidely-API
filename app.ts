@@ -10,6 +10,7 @@ import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import cors from "cors";
 import morgan from "morgan";
+import { authenticateUser } from "./lib/authenticateWrapper";
 
 export const app: Express = express();
 export const prismaClient = new PrismaClient();
@@ -33,11 +34,11 @@ app.use(
 app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 
 app.use("/login", authRouter);
-app.use("/forms", passport.authenticate("jwt", { session: false }), formRouter);
+app.use("/forms", authenticateUser(), formRouter);
 app.use("/protect", protectRouter);
 app.use(
   "/admin",
-  passport.authenticate("jwt", { session: false }),
+  authenticateUser(),
   isAdmin,
   adminRouter
 );

@@ -13,18 +13,18 @@ vi.mock("../../services/votingServices", () => ({
   voteUserOnForm: vi.fn()
 }))
 
-let user: Boolean = false
-vi.mock("../../passport.config", () => ({
-  default: {
-    authenticate: vi.fn().mockImplementation(
-      (strategy, options) =>
-        (req: Request, res: Response, next: NextFunction) => {
-          req.user = user ? {id: 1} : undefined;
-          next();
-        }
-    ),
-  },
-}));
+const mocks = vi.hoisted(() => ({
+  user: vi.fn()
+}))
+
+vi.mock("../../lib/authenticateWrapper", () => ({
+  authenticateUser: vi.fn().mockImplementation(() => {
+    return (req: Request, res: Response, next: NextFunction) => {
+      req.user = mocks.user(),
+      next();
+    }
+  })
+}))
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -36,7 +36,7 @@ afterEach(() => {
 
 describe("Vote on form", () => {
   it("No user", async() => {
-    user = false;
+    mocks.user.mockReturnValue(undefined)
     const response = await request(app).put('/forms/1')
     expect(response.status).toBe(401);
     expect(response.body.success).toBe(false)
@@ -44,7 +44,8 @@ describe("Vote on form", () => {
   })
 
   it("Invalid form", async() => {
-    user = true;
+    mocks.user.mockReturnValue({id: 1});
+
     (votingService.voteUserOnForm as Mock).mockResolvedValue(null);
 
     const response = await request(app).put("/forms/1")
@@ -55,7 +56,8 @@ describe("Vote on form", () => {
   })
 
   it("Valid form", async () => {
-    user = true;
+    mocks.user.mockReturnValue({id: 1});
+    
     (votingService.voteUserOnForm as Mock).mockResolvedValue(true);
 
     const response = await request(app).put("/forms/1")
@@ -68,14 +70,14 @@ describe("Vote on form", () => {
 
 describe("Retrieve Form", () => {
   it("No user", async () => {
-    user = false;
+    mocks.user.mockReturnValue(undefined);
     const response = await request(app).get("/forms");
 
     expect(response.status).toBe(401);
   });
 
   it("Retrieve none", async () => {
-    user = true;
+    mocks.user.mockReturnValue({id: 1});
     (formService.findAllFormsByUser as Mock).mockResolvedValue([]);
 
     const response = await request(app).get("/forms");
@@ -85,7 +87,7 @@ describe("Retrieve Form", () => {
   });
 
   it("Retrieve two forms", async () => {
-    user = true;
+    mocks.user.mockReturnValue({id: 1});
     (formService.findAllFormsByUser as Mock).mockResolvedValue([
       {
         form: {

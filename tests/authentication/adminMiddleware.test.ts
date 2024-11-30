@@ -11,24 +11,13 @@ const mocks = vi.hoisted(() => {
   };
 });
 
-vi.mock("../../passport.config", async () => {
-  const original = await vi.importActual("../../passport.config");
-
-  return {
-    default: {
-      ...original,
-      authenticate: vi
-        .fn()
-        .mockImplementation(
-          (strategy, options) =>
-            (req: Request, res: Response, next: NextFunction) => {
-              req.user = { id: 1, role: mocks.role() };
-              next();
-            }
-        ),
-    },
-  };
-});
+vi.mock("../../lib/authenticateWrapper", () => ({
+  authenticateUser: vi.fn().mockImplementation(() => {
+    return (req: Request, res: Response, next: NextFunction) => {
+      (req.user = { id: 1, role: mocks.role() }), next();
+    };
+  }),
+}));
 
 beforeEach(() => {
   vi.clearAllMocks();
