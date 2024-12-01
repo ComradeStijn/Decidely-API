@@ -28,7 +28,9 @@ async function modifyProxy(req: Request, res: Response, next: NextFunction) {
   } catch (e) {
     if (e instanceof z.ZodError) {
       res.status(400).json({ success: false, message: e.message });
+      return;
     }
+    next(e);
   }
 }
 
