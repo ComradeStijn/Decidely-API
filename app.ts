@@ -1,6 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import express, { Express, Request, Response } from "express";
-import passport from "./passport.config";
+import express, { Express, Request, Response, NextFunction } from "express";
 import authRouter from "./routes/authRouter";
 import formRouter from "./routes/formRouter";
 import protectRouter from "./routes/protectRouter";
@@ -26,22 +25,24 @@ app.use(
 );
 app.use(
   cors({
-    origin: process.env.NODE_ENV === "production" ? "" : "*",
+    origin: process.env.NODE_ENV === "prod" ? "" : "*",
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Authorization", "Content-Type"],
   })
 );
-app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
+app.use(morgan(process.env.NODE_ENV === "prod" ? "combined" : "dev"));
 
 app.use("/login", authRouter);
 app.use("/forms", authenticateUser(), formRouter);
 app.use("/protect", protectRouter);
-app.use(
-  "/admin",
-  authenticateUser(),
-  isAdmin,
-  adminRouter
-);
+app.use("/admin", authenticateUser(), isAdmin, adminRouter);
+
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+  const statusCode = err.statusCode || 500;
+  res
+    .status(statusCode)
+    .json({ success: false, message: err.message || "Internal Server Error" });
+});
 
 const PORT = process.env.PORT || 3000;
 
