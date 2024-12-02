@@ -216,7 +216,7 @@ describe("Create user", () => {
   it("Correct structure", async () => {
     vi.mocked(createNewUser).mockResolvedValue({ test: true } as any);
     const response = await request(app).post("/admin/users").send({
-      username: "test",
+      userName: "test",
       amount: 1,
       userGroupId: "2",
       email: "baba@baba.com",

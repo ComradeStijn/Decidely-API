@@ -39,7 +39,7 @@ async function postForm(req: Request, res: Response, next: NextFunction) {
 }
 
 const createUserSchema = z.object({
-  username: z.string(),
+  userName: z.string(),
   amount: z.number().int().min(1),
   userGroupId: z.string(),
   email: z.string().email().optional(),
@@ -51,7 +51,7 @@ async function postUser(req: Request, res: Response, next: NextFunction) {
     const user = req.user as User | undefined;
 
     const parsedData = createUserSchema.parse(req.body);
-    const { username, amount, userGroupId, email, role } = parsedData;
+    const { userName, amount, userGroupId, email, role } = parsedData;
 
     if (!user) {
       res.status(401).json({ success: false, message: "No user found" });
@@ -61,7 +61,7 @@ async function postUser(req: Request, res: Response, next: NextFunction) {
     const newUser = await prismaClient.$transaction(async (tx) => {
       const result = await createNewUser(
         tx,
-        username,
+        userName,
         amount,
         userGroupId,
         email,
