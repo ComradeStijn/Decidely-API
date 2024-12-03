@@ -60,7 +60,7 @@ async function retrieveProxy(req: Request, res: Response, next: NextFunction) {
       return;
     }
 
-    res.json({ success: true, message: amount });
+    res.json({ success: true, message: amount.proxyAmount });
   } catch (e) {
     next(e);
   }
