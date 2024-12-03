@@ -12,9 +12,9 @@ async function login(
   next: NextFunction
 ): Promise<void> {
   try {
-    const { username, token } = req.body;
+    const { userName, token } = req.body;
 
-    if (!username || !token) {
+    if (!userName || !token) {
       res
         .status(401)
         .json({ success: false, message: "No user or token provided" });
@@ -22,7 +22,7 @@ async function login(
     }
 
     const validate = await prismaClient.$transaction(async (tx) => {
-      return await validateUser(tx, username, token);
+      return await validateUser(tx, userName, token);
     });
 
     if (!validate) {
