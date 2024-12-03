@@ -37,7 +37,7 @@ describe("userLogin", () => {
 
     const response = await request(app)
       .post("/login")
-      .send({ username: "test", token: "bad token" });
+      .send({ userName: "test", token: "bad token" });
 
     expect(response.status).toBe(401);
     expect(response.body.message.toLowerCase()).toContain("incorrect login");
@@ -59,7 +59,7 @@ describe("userLogin", () => {
 
     const response = await request(app)
       .post("/login")
-      .send({username: "test", token: "good token"})
+      .send({userName: "test", token: "good token"})
 
     expect(validateUser).toHaveBeenCalledOnce()
     expect(response.status).toBe(200)

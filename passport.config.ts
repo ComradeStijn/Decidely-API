@@ -15,6 +15,7 @@ export type Payload = {
   sub: string;
   role: string;
   name: string;
+  amount: number;
 };
 
 // export type User = {

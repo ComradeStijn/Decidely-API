@@ -36,6 +36,7 @@ async function login(
       sub: validate.id,
       name: validate.name,
       role: validate.role,
+      amount: validate.proxyAmount
     };
 
     const jsontoken = jwt.sign(payload, process.env.JWT_SECRET || "test", {
