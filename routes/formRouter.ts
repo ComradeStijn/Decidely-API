@@ -5,6 +5,8 @@ const router = Router();
 
 router.get("/", formController.retrieveForms);
 
-router.put("/:formId", formController.voteOnForm)
+router.get("/proxy", formController.retrieveProxy);
+
+router.put("/:formId", formController.voteOnForm);
 
 export default router;

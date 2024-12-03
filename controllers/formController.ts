@@ -33,6 +33,39 @@ async function retrieveForms(req: Request, res: Response, next: NextFunction) {
   }
 }
 
+async function retrieveProxy(req: Request, res: Response, next: NextFunction) {
+  try {
+    const user = req.user as User | undefined;
+
+    if (!user) {
+      res.status(401).json({ success: false, message: "No user found" });
+      return;
+    }
+
+    const amount = await prismaClient.$transaction(async (tx) => {
+      const result = await tx.user.findUnique({
+        where: {
+          id: user.id,
+        },
+        select: {
+          proxyAmount: true,
+        },
+      });
+      return result;
+    });
+    if (!amount) {
+      res
+        .json(400)
+        .json({ success: false, message: "No proxyamount found in database" });
+      return;
+    }
+
+    res.json({ success: true, message: amount });
+  } catch (e) {
+    next(e);
+  }
+}
+
 type receivedDecision = {
   decision: string;
   amount: number;
@@ -73,4 +106,5 @@ async function voteOnForm(req: Request, res: Response, next: NextFunction) {
 export default {
   retrieveForms,
   voteOnForm,
+  retrieveProxy
 };
