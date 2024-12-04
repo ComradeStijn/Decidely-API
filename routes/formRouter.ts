@@ -3,7 +3,7 @@ import formController from "../controllers/formController";
 
 const router = Router();
 
-router.get("/", formController.retrieveForms);
+router.get("/", formController.retrieveUnvotedForms);
 
 router.get("/proxy", formController.retrieveProxy);
 

@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { prismaClient } from "../app";
-import { findAllFormsByUser } from "../services/formServices";
+import { findAllFormsByUser, findAllUnvotedFormsByUser } from "../services/formServices";
 import { Decision, User } from "@prisma/client";
 import { voteUserOnForm } from "../services/votingServices";
 
@@ -15,6 +15,35 @@ async function retrieveForms(req: Request, res: Response, next: NextFunction) {
 
     const forms = await prismaClient.$transaction(async (tx) => {
       const result = await findAllFormsByUser(tx, user.id);
+      return result;
+    });
+
+    const returnObject = forms.map((form) => ({
+      id: form.form.id,
+      title: form.form.title,
+      decisions: form.form.decisions.map((decision) => ({
+        id: decision.id,
+        title: decision.title,
+      })),
+    }));
+
+    res.json({ success: true, message: returnObject });
+  } catch (e) {
+    next(e);
+  }
+}
+
+async function retrieveUnvotedForms(req: Request, res: Response, next: NextFunction) {
+  try {
+    const user = req.user as User | undefined;
+
+    if (!user) {
+      res.status(401).json({ success: false, message: "No user found" });
+      return;
+    }
+
+    const forms = await prismaClient.$transaction(async (tx) => {
+      const result = await findAllUnvotedFormsByUser(tx, user.id);
       return result;
     });
 
@@ -106,5 +135,6 @@ async function voteOnForm(req: Request, res: Response, next: NextFunction) {
 export default {
   retrieveForms,
   voteOnForm,
-  retrieveProxy
+  retrieveProxy,
+  retrieveUnvotedForms
 };

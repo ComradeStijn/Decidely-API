@@ -11,11 +11,11 @@ export async function findAllForms(client: Prisma.TransactionClient) {
             select: {
               id: true,
               name: true,
-              proxyAmount: true
-            }
-          }
-        }
-      }
+              proxyAmount: true,
+            },
+          },
+        },
+      },
     },
   });
   return result;
@@ -28,6 +28,26 @@ export async function findAllFormsByUser(
   const result = await client.userForm.findMany({
     where: {
       userId: userId,
+    },
+    select: {
+      form: {
+        include: {
+          decisions: true,
+        },
+      },
+    },
+  });
+  return result;
+}
+
+export async function findAllUnvotedFormsByUser(
+  client: Prisma.TransactionClient,
+  userId: string
+) {
+  const result = await client.userForm.findMany({
+    where: {
+      userId: userId,
+      hasVoted: false,
     },
     select: {
       form: {
