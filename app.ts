@@ -33,7 +33,7 @@ app.use(
 app.use(morgan(process.env.NODE_ENV === "prod" ? "combined" : "dev"));
 
 app.use("/login", authRouter);
-app.use("/forms", formRouter);
+app.use("/forms", authenticateUser(), formRouter);
 app.use("/protect", protectRouter);
 app.use("/admin", authenticateUser(), isAdmin, adminRouter);
 
