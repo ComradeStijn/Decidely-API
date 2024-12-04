@@ -123,7 +123,7 @@ async function voteOnForm(req: Request, res: Response, next: NextFunction) {
 
     if (!amount) {
       res
-        .json(400)
+        .status(400)
         .json({ success: false, message: "No proxyamount found in database" });
       return;
     }
@@ -135,11 +135,12 @@ async function voteOnForm(req: Request, res: Response, next: NextFunction) {
 
     if (castedVoteAmount !== amount.proxyAmount) {
       res
-        .json(400)
+        .status(400)
         .json({
           success: false,
           message: "Proxyamount does not equal votes casted",
         });
+      return
     }
 
     const result = await prismaClient.$transaction(async (tx) => {

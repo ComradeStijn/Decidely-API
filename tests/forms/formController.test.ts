@@ -78,6 +78,25 @@ describe("Vote on form", () => {
       "form 1 vote success"
     );
   });
+
+  it("Castedvotes not equal to proxy", async() => {
+    mocks.user.mockReturnValue({ id: 1 });
+
+    (votingService.voteUserOnForm as Mock).mockResolvedValue(true);
+    (formService.findProxyAmount as Mock).mockResolvedValue({ proxyAmount: 2 });
+
+    const response = await request(app)
+      .put("/forms/1")
+      .send({
+        decisions: [{ decision: "testing", amount: 1 }],
+      });
+    
+    expect(response.status).toBe(400);
+    expect(response.body.success).toBe(false);
+    expect(response.body.message.toLowerCase()).toContain(
+      "proxyamount does not equal votes"
+    );
+  })
 });
 
 describe("Retrieve Form", () => {
@@ -169,3 +188,4 @@ describe("Retrieve Form", () => {
     expect(response.body.message).toEqual(expectedReturn);
   });
 });
+
