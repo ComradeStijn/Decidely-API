@@ -18,8 +18,8 @@ app.use(express.json({ limit: "10kb" }));
 app.use(helmet());
 app.use(
   rateLimit({
-    windowMs: 15 * 600 * 1000,
-    max: 100,
+    windowMs: 15 * 60 * 1000,
+    max: 500,
     message: { error: "Too many requests, please try again later." },
   })
 );
@@ -33,7 +33,7 @@ app.use(
 app.use(morgan(process.env.NODE_ENV === "prod" ? "combined" : "dev"));
 
 app.use("/login", authRouter);
-app.use("/forms", authenticateUser(), formRouter);
+app.use("/forms", formRouter);
 app.use("/protect", protectRouter);
 app.use("/admin", authenticateUser(), isAdmin, adminRouter);
 
