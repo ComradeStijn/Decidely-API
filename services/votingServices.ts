@@ -52,7 +52,6 @@ export async function voteUserOnForm(
       })
     );
   } catch (e: any) {
-    console.error(`Error ${e.code}: ${e.message}`);
     return null;
   }
 }

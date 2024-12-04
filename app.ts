@@ -44,7 +44,7 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
     .json({ success: false, message: err.message || "Internal Server Error" });
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 
 if (process.env.NODE_ENV !== "test") {
   app.listen(PORT, () => {
