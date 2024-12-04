@@ -1,6 +1,10 @@
 import { NextFunction, Request, Response } from "express";
 import { prismaClient } from "../app";
-import { findAllFormsByUser, findAllUnvotedFormsByUser } from "../services/formServices";
+import {
+  findAllFormsByUser,
+  findAllUnvotedFormsByUser,
+  findProxyAmount,
+} from "../services/formServices";
 import { Decision, User } from "@prisma/client";
 import { voteUserOnForm } from "../services/votingServices";
 
@@ -33,7 +37,11 @@ async function retrieveForms(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-async function retrieveUnvotedForms(req: Request, res: Response, next: NextFunction) {
+async function retrieveUnvotedForms(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
   try {
     const user = req.user as User | undefined;
 
@@ -72,14 +80,7 @@ async function retrieveProxy(req: Request, res: Response, next: NextFunction) {
     }
 
     const amount = await prismaClient.$transaction(async (tx) => {
-      const result = await tx.user.findUnique({
-        where: {
-          id: user.id,
-        },
-        select: {
-          proxyAmount: true,
-        },
-      });
+      const result = await findProxyAmount(tx, user.id)
       return result;
     });
     if (!amount) {
@@ -111,10 +112,41 @@ async function voteOnForm(req: Request, res: Response, next: NextFunction) {
       return;
     }
 
+    if (decisions.length === 0) {
+      res.status(400).json({ success: false, message: "No decisions in Body" });
+    }
+
+    const amount = await prismaClient.$transaction(async (tx) => {
+      const result = await findProxyAmount(tx, user.id)
+      return result;
+    });
+
+    if (!amount) {
+      res
+        .json(400)
+        .json({ success: false, message: "No proxyamount found in database" });
+      return;
+    }
+
+    const castedVoteAmount: number = decisions.reduce(
+      (acc, cur) => acc + cur.amount,
+      0
+    );
+
+    if (castedVoteAmount !== amount.proxyAmount) {
+      res
+        .json(400)
+        .json({
+          success: false,
+          message: "Proxyamount does not equal votes casted",
+        });
+    }
+
     const result = await prismaClient.$transaction(async (tx) => {
       const vote = await voteUserOnForm(tx, user.id, formId, decisions);
       return vote;
     });
+
 
     if (!result) {
       res
@@ -136,5 +168,5 @@ export default {
   retrieveForms,
   voteOnForm,
   retrieveProxy,
-  retrieveUnvotedForms
+  retrieveUnvotedForms,
 };

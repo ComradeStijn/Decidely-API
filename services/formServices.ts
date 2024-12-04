@@ -106,3 +106,18 @@ export async function deleteForm(client: Prisma.TransactionClient, id: string) {
   });
   return result;
 }
+
+export async function findProxyAmount(
+  client: Prisma.TransactionClient,
+  userId: string
+) {
+  const result = await client.user.findUnique({
+    where: {
+      id: userId,
+    },
+    select: {
+      proxyAmount: true,
+    },
+  });
+  return result;
+}

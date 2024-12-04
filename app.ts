@@ -38,6 +38,7 @@ app.use("/protect", protectRouter);
 app.use("/admin", authenticateUser(), isAdmin, adminRouter);
 
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+  console.log(err)
   const statusCode = err.statusCode || 500;
   res
     .status(statusCode)
