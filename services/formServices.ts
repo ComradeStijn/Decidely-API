@@ -4,18 +4,6 @@ export async function findAllForms(client: Prisma.TransactionClient) {
   const result = await client.form.findMany({
     include: {
       decisions: true,
-      userForms: {
-        select: {
-          hasVoted: true,
-          user: {
-            select: {
-              id: true,
-              name: true,
-              proxyAmount: true,
-            },
-          },
-        },
-      },
     },
   });
   return result;
