@@ -5,8 +5,8 @@ const router = Router();
 
 router.get("/", (req: Request, res: Response) => {
   res
-    .status(405)
-    .json({ success: false, message: "GET is not a valid method" });
+    .status(200)
+    .json({ success: true, message: "GET is not a valid method" });
 });
 
 router.post("/", authController.login);
