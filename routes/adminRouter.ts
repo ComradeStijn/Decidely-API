@@ -36,19 +36,22 @@ router.put("/users/proxy", adminModifyController.modifyProxy);
 
 // Assign User to Group
 // Note: Currently, user is permanently assigned to group
-// 
+//
 // router.post("/users/assign", adminAssignController.putUserToGroup);
 
 // Get all Groups
-router.get("/groups", adminViewController.getAllGroups)
+router.get("/groups", adminViewController.getAllGroups);
 
 // Create Group
 router.post("/groups", adminCreateController.postUserGroup);
+
+// Delete Group
+router.delete("/groups", adminDeleteController.deleteGroupController);
 
 // Assign Group to Form
 router.post("/groups/assign", adminAssignController.putGroupToForm);
 
 // Deassign Group to Form
-router.delete("/groups/assign", adminAssignController.deleteGroupToForm)
+router.delete("/groups/assign", adminAssignController.deleteGroupToForm);
 
 export default router;

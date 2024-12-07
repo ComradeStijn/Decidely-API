@@ -3,7 +3,7 @@ import { z } from "zod";
 import { deleteForm } from "../services/formServices";
 import { User } from "@prisma/client";
 import { prismaClient } from "../app";
-import { deleteUser } from "../services/userServices";
+import { deleteUser, deleteUserGroup } from "../services/userServices";
 
 const deleteFormSchema = z.object({
   formId: z.string().trim(),
@@ -72,7 +72,41 @@ async function deleteUserController(
   }
 }
 
+const deleteGroupSchema = z.object({
+  groupId: z.string().trim(),
+});
+
+async function deleteGroupController(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const user = req.user as User | undefined;
+    const parsedData = deleteGroupSchema.parse(req.body);
+    const { groupId } = parsedData;
+
+    if (!user) {
+      res.status(401).json({ success: false, message: "No user found" });
+      return;
+    }
+
+    const deleted = await prismaClient.$transaction(async (tx) => {
+      const response = await deleteUserGroup(tx, groupId);
+      return response;
+    });
+
+    res.json({ success: true, message: deleted });
+  } catch (e) {
+    if (e instanceof z.ZodError) {
+      res.status(400).json({ success: false, message: e.message });
+    }
+    next(e);
+  }
+}
+
 export default {
   deleteFormController,
   deleteUserController,
+  deleteGroupController,
 };
