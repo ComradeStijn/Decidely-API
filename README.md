@@ -1,5 +1,5 @@
 # Decidely-API
-Backend server for Decidely App
+Backend server for Decidely App. Frontend on https://github.com/ComradeStijn/Decidely-Next-JS
 
 
 ## Finished
