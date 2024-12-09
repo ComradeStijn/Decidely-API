@@ -14,7 +14,7 @@ Backend server for Decidely App. Frontend on https://github.com/ComradeStijn/Dec
 1. Clone the repo
 2. Install NPM packages and build
   ```sh
-  npm install --lregacy-peer-deps && npm run ts-build
+  npm install --legacy-peer-deps && npm run ts-build
   ```
 3. Start server
   ```
