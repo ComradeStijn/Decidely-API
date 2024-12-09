@@ -16,7 +16,13 @@ Backend server for Decidely App. Frontend on https://github.com/ComradeStijn/Dec
   ```sh
   npm install --legacy-peer-deps && npm run ts-build
   ```
-3. Start server
+3. Set Environment Variables
+```js
+DATABASE_URL=""
+JWT_SECRET=""
+NODE_ENV="prod"
+```
+4. Start server
   ```
   npm run dev
   ```
