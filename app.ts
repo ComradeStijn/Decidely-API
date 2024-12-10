@@ -25,7 +25,7 @@ app.use(
 );
 app.use(
   cors({
-    origin: process.env.NODE_ENV === "prod" ? "" : "*",
+    origin: process.env.NODE_ENV === "prod" ? "https://decidely-next-js.vercel.app" : "*",
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Authorization", "Content-Type"],
   })
